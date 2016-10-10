@@ -4,6 +4,7 @@ import MySQLdb
 import string 
 import random
 import os
+from time import sleep
 
 def file_name_generator(size=6, chars=string.ascii_uppercase + string.digits):
 	return ''.join(random.choice(chars) for _ in range(size))
@@ -35,7 +36,21 @@ def image_local_save(url):
 	name = file_name_generator()
 	file_name = name+'.'+extension
 	with open(file_name,'wb') as f:
-		f.write(requests.get(url).content)
+		MAX_TRY = 6
+		try_num = 1
+		img_content = ''
+		while try_num <= MAX_TRY and not img_content:
+			try: 
+				img_content = requests.get(url).content
+			except:
+				sleep(3)
+				try_num += 1
+				print '[-] Retreiving gifs, Retry number: ', try_num
+
+		if img_content:
+			f.write(img_content)
+		else:
+			print '[-] Enable to save gif'
 	print '[+] Saving Gif to ', file_name
 	f.close()
 	return file_name
@@ -74,5 +89,6 @@ def save_new_gifs(urls):
 
 if __name__ == '__main__':
 	#urls = ['https://tpc.googlesyndication.com/simgad/1751857741877065419']
-	urls = ['https://tpc.googlesyndication.com/simgad/8537187466804554545']
+	# urls = ['https://tpc.googlesyndication.com/simgad/8537187466804554545']
+	urls = ['https://tpc.googlesyndication.com/simgad/13707582525134515756']
 	save_new_gifs(urls)
