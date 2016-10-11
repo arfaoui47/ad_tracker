@@ -4,7 +4,8 @@ import MySQLdb
 import string 
 import random
 import os
-from time import sleep
+import time
+
 
 def file_name_generator(size=6, chars=string.ascii_uppercase + string.digits):
 	return ''.join(random.choice(chars) for _ in range(size))
@@ -27,11 +28,11 @@ def data_retrieve(data, connexion):
 def image_local_save(url):
 	print '[+] Url to save: ', url
 	extension = 'gif'
-	if url[:-3]=='jpg':
+	if url[-3:]=='jpg':
 		extension='jpg'
-	elif url[:-3]=='jpeg':
+	elif url[-4:]=='jpeg':
 		extension='jpeg'
-	elif url[:-3]=='png':
+	elif url[-3:]=='png':
 		extension='png'
 	name = file_name_generator()
 	file_name = name+'.'+extension
@@ -43,7 +44,7 @@ def image_local_save(url):
 			try: 
 				img_content = requests.get(url).content
 			except:
-				sleep(3)
+				time.sleep(3)
 				try_num += 1
 				print '[-] Retreiving gifs, Retry number: ', try_num
 
@@ -51,6 +52,7 @@ def image_local_save(url):
 			f.write(img_content)
 		else:
 			print '[-] Enable to save gif'
+			return 0
 	print '[+] Saving Gif to ', file_name
 	f.close()
 	return file_name
@@ -58,7 +60,8 @@ def image_local_save(url):
 def data_insert(data, connexion):
 	cursor = connexion.cursor()
 	try:
-		cursor.execute("INSERT INTO images(`checksum`) VALUES ({})".format(`data`))
+		cursor.execute("INSERT INTO images(checksum, date_creation) VALUES ({},{})".format(
+			`data`, `time.strftime('%Y-%m-%d %H:%M:%S')`))
 		print '[+] Saving to MySQL database ...'
 		connexion.commit()
 	except:
@@ -69,26 +72,27 @@ def to_md5(file):
 	f=open(file, 'rb').read()
 	check_sum = md5(f).hexdigest()
 	print '[+] hashing file to md5: ', check_sum
-	os.remove(file)    	 		
-	print '[+] Deleting file ', file		#remove file  
+	os.remove(file)    	 								#remove file after checkusm
+	print '[+] Deleting file ', file		
 	return check_sum
 
 def save_new_gifs(urls):
 	conn = db_connection()
 	for url in urls:
-		if 'tpc' in url:
-			print '[+] checking for gif: ', url
-			file = image_local_save(url);
+		# if 'tpc' in url:
+		file = image_local_save(url);
+		if file:
 			md5_hash = to_md5(file)
 
 			if data_retrieve(md5_hash, conn):
 				data_insert(md5_hash, conn)
 			else:
 				print '[-] Data is already in database'
+			print
 
 
 if __name__ == '__main__':
 	#urls = ['https://tpc.googlesyndication.com/simgad/1751857741877065419']
 	# urls = ['https://tpc.googlesyndication.com/simgad/8537187466804554545']
-	urls = ['https://tpc.googlesyndication.com/simgad/13707582525134515756']
+	urls = ['http://ds.serving-sys.com/BurstingRes///Site-83489/Type-0/768420c0-8760-431a-ad87-3b79c160c867.jpg']
 	save_new_gifs(urls)
