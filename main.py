@@ -3,6 +3,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from lxml import html, etree
 import urllib
 from save import save_new_gifs
+import requests
 
 
 def iframe_get_gifs_urls(url, iframes):
@@ -27,12 +28,26 @@ def iframe_get_gifs_urls(url, iframes):
 	driver.close()
 	return gifs_urls
 
+
 def easyenergy_get_gifs_url(url, urls):
 	return urls
 
+def images_in_source(url, paths):
+	page = requests.get(url)
+	tree = html.fromstring(page.content)
+	imgs = []
+	for path in paths:
+		imgs+=tree.xpath('//img[contains(@src, "banners")]/@src')
+	for i in imgs:
+		if i[0] == '/':
+			imgs.append(url+i)
+			imgs.remove(i)
+	return imgs
+	
 
 if __name__ == '__main__':
-	url_list = ['http://www.sigmalive.com', 'http://politis.com.cy', 'http://www.24h.com.cy/']
+	url_list = ['http://www.sigmalive.com', 'http://politis.com.cy', 'http://www.24h.com.cy/',
+				'http://www.alfanews.com.cy/']
 	gifs_paths = {
 			'http://www.sigmalive.com':{'urls':
 										['//*[@id="google_ads_iframe_/45099537/Leaderboard_0"]',
@@ -69,6 +84,10 @@ if __name__ == '__main__':
 										   'http://www.easyenergy.com.cy/openx/www/delivery/avw.php?zoneid=76',
 											],
 										'type': 'easyenergy'
+										},
+			'http://www.alfanews.com.cy/': {'urls':
+										   ['http://www.alfanews.com.cy/images/banners'],
+										'type': 'image_in_source'
 										}
 
 			  }
@@ -79,7 +98,11 @@ if __name__ == '__main__':
 			gifs_url = iframe_get_gifs_urls(url, gifs_paths[url]['urls'])
 			print '[+] All Gif links',gifs_url	
 			save_new_gifs(gifs_url)
-		elif gifs_paths[url]['type'] == 'easyenergy':
+		if gifs_paths[url]['type'] == 'easyenergy':
 			gifs_url = easyenergy_get_gifs_url(url, gifs_paths[url]['urls'])
+			print '[+] All Gif links',gifs_url	
+			save_new_gifs(gifs_url)
+		if gifs_paths[url]['type'] == 'image_in_source':
+			gifs_url = images_in_source(url, gifs_paths[url]['urls'])
 			print '[+] All Gif links',gifs_url	
 			save_new_gifs(gifs_url)
