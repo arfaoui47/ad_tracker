@@ -48,7 +48,8 @@ def images_in_source(url, paths):
 
 if __name__ == '__main__':
 	url_list = ['http://www.sigmalive.com', 'http://politis.com.cy', 'http://www.24h.com.cy/',
-				'http://www.alfanews.com.cy/', 'http://www.ant1iwo.com/']
+				'http://www.alfanews.com.cy/', 'http://www.ant1iwo.com/', 'http://www.balla.com.cy/'
+				]
 	gifs_paths = {
 			'http://www.sigmalive.com':{'urls':
 										['//*[@id="google_ads_iframe_/45099537/Leaderboard_0"]',
@@ -99,6 +100,16 @@ if __name__ == '__main__':
 									 ],
 									 'type':'google_iframe'
 									 },
+			'http://www.balla.com.cy/': {'urls':
+										   [
+										   'http://www.easyenergy.com.cy/openx/www/delivery/avw.php?zoneid=61',
+										   'http://www.easyenergy.com.cy/openx/www/delivery/avw.php?zoneid=21',
+										   'http://www.easyenergy.com.cy/openx/www/delivery/avw.php?zoneid=72',
+										   'http://www.easyenergy.com.cy/openx/www/delivery/avw.php?zoneid=23',
+										   'http://www.easyenergy.com.cy/openx/www/delivery/avw.php?zoneid=20',
+											],
+										'type': 'easyenergy'
+										},
 
 			  }
 
