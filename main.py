@@ -19,6 +19,7 @@ def iframe_get_gifs_urls(url, iframes):
 			tree = html.fromstring(str(result.encode('utf-8')))
 			
 			imgs=tree.xpath('//img/@src')
+			print "########", imgs  							 # for debugging 
 			for i in imgs:
 				if 'www.google.com/ads/measurement/' not in i:   #some images are 
 					gifs_urls.append(i)
@@ -47,7 +48,7 @@ def images_in_source(url, paths):
 
 if __name__ == '__main__':
 	url_list = ['http://www.sigmalive.com', 'http://politis.com.cy', 'http://www.24h.com.cy/',
-				'http://www.alfanews.com.cy/']
+				'http://www.alfanews.com.cy/', 'http://www.ant1iwo.com/']
 	gifs_paths = {
 			'http://www.sigmalive.com':{'urls':
 										['//*[@id="google_ads_iframe_/45099537/Leaderboard_0"]',
@@ -88,7 +89,16 @@ if __name__ == '__main__':
 			'http://www.alfanews.com.cy/': {'urls':
 										   ['http://www.alfanews.com.cy/images/banners'],
 										'type': 'image_in_source'
-										}
+										},
+			'http://www.ant1iwo.com/': {'urls':
+									  ['//*[@id="google_ads_iframe_/126701466/Home_Page_Banner_300x250_4_0"]',
+									  '//*[@id="google_ads_iframe_/126701466/Home_Page_Banner_768x90_1_0"]',
+									  '//*[@id="google_ads_iframe_/126701466/Home_Page_Banner_Sponsored1_250x326_0"]',
+									  '//*[@id="google_ads_iframe_/126701466/Home_Page_Banner_300x250_1_0"]',
+									  '//*[@id="google_ads_iframe_/126701466/Home_Page_Banner_768x90_3_0"]',
+									 ],
+									 'type':'google_iframe'
+									 },
 
 			  }
 

@@ -72,7 +72,7 @@ def to_md5(file):
 	f=open(file, 'rb').read()
 	check_sum = md5(f).hexdigest()
 	print '[+] hashing file to md5: ', check_sum
-	os.remove(file)    	 								#remove file after checkusm
+	# os.remove(file)    	 								#remove file after checkusm
 	print '[+] Deleting file ', file		
 	return check_sum
 
