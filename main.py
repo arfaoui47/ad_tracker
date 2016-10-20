@@ -4,7 +4,7 @@ from lxml import html, etree
 import urllib
 from save import save_new_gifs
 import requests
-
+import time
 
 def iframe_get_gifs_urls(url, iframes):
 	driver = webdriver.Firefox()
@@ -14,6 +14,7 @@ def iframe_get_gifs_urls(url, iframes):
 		try:
 			print '[+] iframe:',iframe
 			frame_found = WebDriverWait(driver, 10).until(lambda driver:driver.find_element_by_xpath(iframe))
+			print frame_found
 			driver.switch_to_frame(frame_found)
 			result =  driver.page_source
 			tree = html.fromstring(str(result.encode('utf-8')))
@@ -24,8 +25,9 @@ def iframe_get_gifs_urls(url, iframes):
 				if 'www.google.com/ads/measurement/' not in i:   #some images are 
 					gifs_urls.append(i)
 			driver.switch_to_default_content()
-		except:
+		except Exception, e:
 			print '[-] iframe fialed: ', iframe
+			print '[-] Exception: ', str(e)
 	driver.close()
 	return gifs_urls
 
@@ -38,17 +40,20 @@ def images_in_source(url, paths):
 	tree = html.fromstring(page.content)
 	imgs = []
 	for path in paths:
-		imgs+=tree.xpath('//img[contains(@src, "banners")]/@src')
+		imgs+=tree.xpath('//img[contains(@src, {})]/@src'.format(`path`))
 	for i in imgs:
 		if i[0] == '/':
 			imgs.append(url+i)
 			imgs.remove(i)
 	return imgs
-	
+
 
 if __name__ == '__main__':
+	now = int(time.time() * 1000)
 	url_list = ['http://www.sigmalive.com', 'http://politis.com.cy', 'http://www.24h.com.cy/',
-				'http://www.alfanews.com.cy/', 'http://www.ant1iwo.com/', 'http://www.balla.com.cy/'
+				'http://www.alfanews.com.cy/', 'http://www.ant1iwo.com/', 'http://www.balla.com.cy/',
+				'http://www.i-eidisi.com/', 'http://www.ilovestyle.com/', 'http://www.kathimerini.com.cy/'
+
 				]
 	gifs_paths = {
 			'http://www.sigmalive.com':{'urls':
@@ -110,20 +115,50 @@ if __name__ == '__main__':
 											],
 										'type': 'easyenergy'
 										},
-
-			  }
+			'https://www.ergodotisi.com/': {'urls':
+									  ['//*[@id="google_esf"]'									  
+									 ],
+									 'type':'google_iframe'
+									 },
+			'http://www.i-eidisi.com/': {'urls':
+										   ['http://www.i-eidisi.com/wp-content/ttprsu'],
+										'type': 'image_in_source'
+										},
+			'http://www.ilovestyle.com/': {'urls':
+									  ['//*[@id="google_ads_iframe_Home_960x90"]',
+									   '//*[@id="google_ads_iframe_/9520043/Home_undeslideshow_720x90_0"]',
+									   '//*[@id="google_ads_iframe_RightSkinSlot"]',
+									   '//*[@id="google_ads_iframe_LeftSkinSlot"]',
+									   '//*[@id="google_ads_iframe_/9520043/HomePage_300x250_1_0"]',
+									   '//*[@id="google_ads_iframe_/9520043/HomePage_300x250_2_0"]',
+									   '//*[@id="google_ads_iframe_/9520043/HomePage_300x250_3_0"]',
+									   '//*[@id="google_ads_iframe_HomePage_300x250_4"]',
+									   '//*[@id="google_ads_iframe_HomePage_300x250_5"]',
+									   '//*[@id="google_ads_iframe_/9520043/home_300x250_nexttocatwalks_0"]',
+									 ],
+									 'type':'google_iframe'
+			 						 },
+			'http://www.kathimerini.com.cy/': {'urls':
+									  ["//iframe[contains(@src, 'http://ads.adstore.com.cy/__gb/?zonid=6&sizid=1&')]",
+									   "//iframe[contains(@src, 'http://ads.adstore.com.cy/__gb/?zonid=6&sizid=2&')]",
+									   "//iframe[contains(@src, 'http://ads.adstore.com.cy/__gb/?zonid=6&sizid=3&')]"
+									 ],
+									 'type':'google_iframe'}
+}
 
 	for url in url_list:
 		print '[+] Retrieving Gifs in URL: ',url
-		if gifs_paths[url]['type'] == 'google_iframe':
-			gifs_url = iframe_get_gifs_urls(url, gifs_paths[url]['urls'])
-			print '[+] All Gif links',gifs_url	
-			save_new_gifs(gifs_url)
-		if gifs_paths[url]['type'] == 'easyenergy':
-			gifs_url = easyenergy_get_gifs_url(url, gifs_paths[url]['urls'])
-			print '[+] All Gif links',gifs_url	
-			save_new_gifs(gifs_url)
-		if gifs_paths[url]['type'] == 'image_in_source':
-			gifs_url = images_in_source(url, gifs_paths[url]['urls'])
-			print '[+] All Gif links',gifs_url	
-			save_new_gifs(gifs_url)
+		if 'kath' in url:
+			if gifs_paths[url]['type'] == 'google_iframe':
+				gifs_url = iframe_get_gifs_urls(url, gifs_paths[url]['urls'])
+				print '[+] All Gif links',gifs_url	
+				save_new_gifs(gifs_url)
+			if gifs_paths[url]['type'] == 'easyenergy':
+				gifs_url = easyenergy_get_gifs_url(url, gifs_paths[url]['urls'])
+				print '[+] All Gif links',gifs_url	
+				save_new_gifs(gifs_url)
+			if gifs_paths[url]['type'] == 'image_in_source':
+				gifs_url = images_in_source(url, gifs_paths[url]['urls'])
+				print '[+] All Gif links',gifs_url	
+				save_new_gifs(gifs_url)
+		
