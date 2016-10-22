@@ -1,2 +1,4 @@
 *.pyc
 tests/__pycache__
+cov_html
+.coverage
