@@ -16,7 +16,9 @@ def iframe_get_gifs_urls(url, iframes):
 			frame_found = WebDriverWait(driver, 10).until(lambda driver:driver.find_element_by_xpath(iframe))
 			driver.switch_to_frame(frame_found)
 			result =  driver.page_source
+			print result
 			tree = html.fromstring(str(result.encode('utf-8')))
+			imgs=tree.xpath('//img/@src')
 			print "########", imgs  							 # for debugging 
 			for i in imgs:
 				if 'www.google.com/ads/measurement/' not in i:   #some images are 
@@ -70,6 +72,54 @@ def subiframe_get_gifs_urls(url, iframes):
 	driver.close()
 	return gifs_urls
 
+def sub_subiframe_get_gifs_urls(url, iframes):					# 3 steps iframes
+	driver = webdriver.Firefox()
+	driver.get(url)
+	gifs_urls = []
+	for iframe in iframes:
+		try:
+			print '[+] iframe:',iframe
+			first_iframe, second_iframe, third_iframe = iframe
+			
+			frame_found1 = WebDriverWait(driver, 10).until(lambda driver:driver.find_element_by_xpath(first_iframe))
+			driver.switch_to_frame(frame_found1)
+			result1 = driver.page_source
+			print '111111      ', result1
+			tree1 = html.fromstring(str(result1.encode('utf-8')))
+			time.sleep(1)
+			frame_found2 = WebDriverWait(driver, 10).until(lambda driver:driver.find_element_by_xpath(second_iframe))
+			driver.switch_to_frame(frame_found2)
+			result2 = driver.page_source
+			print '222222222       ', result2
+			tree2 = html.fromstring(str(result2.encode('utf-8')))
+			
+			frame_found3 = WebDriverWait(driver, 10).until(lambda driver:driver.find_element_by_xpath(third_iframe))
+			driver.switch_to_frame(frame_found3)
+			result3 = driver.page_source
+			print '3333333      ',result3
+			tree3 = html.fromstring(str(result3.encode('utf-8')))
+
+			frame_found4 = WebDriverWait(driver, 10).until(lambda driver:driver.find_element_by_tag_name('iframe'))
+			print frame_found4
+			driver.switch_to_frame(frame_found4)
+			result3 = driver.page_source
+			print '44444      ',result3
+			tree3 = html.fromstring(str(result3.encode('utf-8')))
+
+			imgs=tree3.xpath('//img/@src')
+			print "########", imgs  							 # for debugging 
+			for i in imgs:
+				if 'www.google.com/ads/measurement/' and '//www.gstatic.com' not in i:   #some images are 
+					gifs_urls.append(i)
+			driver.switch_to_default_content()
+			driver.switch_to_default_content()
+			
+		except Exception, e:
+			print '[-] iframe fialed: ', iframe
+			print '[-] Exception: ', str(e)
+	driver.close()
+	return gifs_urls
+
 
 def easyenergy_get_gifs_url(url, urls):
 	return urls
@@ -92,7 +142,8 @@ if __name__ == '__main__':
 	url_list = ['http://www.sigmalive.com', 'http://politis.com.cy', 'http://www.24h.com.cy/',
 				'http://www.alfanews.com.cy/', 'http://www.ant1iwo.com/', 'http://www.balla.com.cy/',
 				'http://www.i-eidisi.com/', 'http://www.ilovestyle.com/', 'http://www.kathimerini.com.cy/',
-				'http://www.kerkida.net/','http://www.omonoia24.com/'
+				'http://www.kerkida.net/','http://www.omonoia24.com/', 'http://www.onlycy.com/',
+				'http://www.philenews.com/', 'http://www.stockwatch.com.cy/'
 				]
 	gifs_paths = {
 			'http://www.sigmalive.com':{'urls':
@@ -204,14 +255,43 @@ if __name__ == '__main__':
 									  ('//*[@id="aswift_1"]', '//*[@id="google_ads_frame2"]', '//*[@id="ad_iframe"]'),
 									  ],
 									  'type':'google_sub_iframes'
-									 }					
+									 },
+			'http://www.onlycy.com/': {'urls':
+									  ['//*[@id="google_ads_iframe_/38893584/onlycy_new_fp_1_0"]',
+									   '//*[@id="google_ads_iframe_/38893584/onlycy_new_fp_2_0"]',
+									   '//*[@id="google_ads_iframe_/38893584/onlycy_new_ap_3_0"]',
+									   '//*[@id="google_ads_iframe_/38893584/onlycy_new_fp_5_0"]',
+									 ],
+									 'type':'google_iframe'},	
+			'http://www.philenews.com/': {'urls':
+									  [('//iframe[@id="cdxhd_ifr_159187_10"]', '//iframe[@id="aswift_0"]', '//iframe[@name="google_ads_frame1"]')
+
+									  # '//*[@id="cdxhd_ifr_159183_5"]',
+									  # '//*[@id="cdxhd_ifr_159187_3"]',
+									   
+									   # '//*[@id="google_ads_iframe_/38893584/onlycy_new_ap_3_0"]',
+									   # '//*[@id="google_ads_iframe_/38893584/onlycy_new_fp_5_0"]',
+									 ],
+									 'type':'sub_sub_google_iframe'},
+			'http://www.stockwatch.com.cy/': {'urls':
+									  ['//*[@id="google_ads_iframe_/95309258/sw_home_tbr_0"]',
+									   '//*[@id="google_ads_iframe_/95309258/sw_home_tbl_0"]',
+									   '//*[@id="google_ads_iframe_/95309258/sw_home_bl1_0"]',
+									   '//*[@id="google_ads_iframe_/95309258/sw_home_bl2_0"]',
+									   '//*[@id="google_ads_iframe_/95309258/sw_home_bbl_0"]',
+									   
+									 ],
+									 'type':'google_iframe'},
 }
 
 
 	for url in url_list:
 		print '[+] Retrieving Gifs in URL: ',url
-		if 'omonoia24' in url:
-
+		if 'onlycy' in url:
+			if gifs_paths[url]['type'] == 'sub_sub_google_iframe':
+				gifs_url = sub_subiframe_get_gifs_urls(url, gifs_paths[url]['urls'])
+				print '[+] All Gif links',gifs_url	
+				save_new_gifs(gifs_url)
 			if gifs_paths[url]['type'] == 'google_sub_iframes':
 				gifs_url = subiframe_get_gifs_urls(url, gifs_paths[url]['urls'])
 				print '[+] All Gif links',gifs_url	
