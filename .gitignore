@@ -1,1 +1,2 @@
 *.pyc
+tests/__pycache__
