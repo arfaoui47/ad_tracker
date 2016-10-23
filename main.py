@@ -9,20 +9,20 @@ import time
 def iframe_get_gifs_urls(url, iframes):
 	driver = webdriver.Firefox()
 	driver.get(url)
-	gifs_urls = []
+	gifs_urls = set()
 	for iframe in iframes:
 		try:
 			print '[+] iframe:',iframe
 			frame_found = WebDriverWait(driver, 10).until(lambda driver:driver.find_element_by_xpath(iframe))
 			driver.switch_to_frame(frame_found)
 			result =  driver.page_source
-			print result
+			# print result
 			tree = html.fromstring(str(result.encode('utf-8')))
 			imgs=tree.xpath('//img/@src')
 			print "########", imgs  							 # for debugging 
 			for i in imgs:
-				if 'www.google.com/ads/measurement/' not in i:   #some images are 
-					gifs_urls.append(i)
+				if 'www.google.com/ads/measurement/' not in i and 'gstatic' not in i:   #some images are 
+					gifs_urls.add(i)
 			driver.switch_to_default_content()
 		except Exception, e:
 			print '[-] iframe fialed: ', iframe
@@ -143,7 +143,8 @@ if __name__ == '__main__':
 				'http://www.alfanews.com.cy/', 'http://www.ant1iwo.com/', 'http://www.balla.com.cy/',
 				'http://www.i-eidisi.com/', 'http://www.ilovestyle.com/', 'http://www.kathimerini.com.cy/',
 				'http://www.kerkida.net/','http://www.omonoia24.com/', 'http://www.onlycy.com/',
-				'http://www.philenews.com/', 'http://www.stockwatch.com.cy/'
+				'http://www.philenews.com/', 'http://www.stockwatch.com.cy/', 'http://www.timeoutcyprus.com/',
+				'http://tvonenews.com.cy/'
 				]
 	gifs_paths = {
 			'http://www.sigmalive.com':{'urls':
@@ -165,7 +166,7 @@ if __name__ == '__main__':
 									  '//*[@id="google_ads_iframe_/110403327/300x250_06_0"]',
 									  '//*[@id="google_ads_iframe_/110403327/SPT_300x250_02_0"]',
 									  '//*[@id="google_ads_iframe_/110403327/300x250_07_0"]',
-									  '//*[@id="google_ads_iframe_/110403327/SPT_300x250_02_0"]',
+									  
 									 ],
 									 'type':'google_iframe'
 									 },
@@ -282,30 +283,51 @@ if __name__ == '__main__':
 									   
 									 ],
 									 'type':'google_iframe'},
+
+			'http://www.timeoutcyprus.com/': {'urls':
+									  ['//*[@id="google_ads_iframe_HTML:728X90_HEADER_HOME"]',
+									   '//*[@id="google_ads_iframe_HTML:300X250_TOP_RIGHT_HOME"]',
+									   '//*[@id="google_ads_iframe_HTML:300X250_MIDDLE_RIGHT_HOME"]',
+									   '//*[@id="google_ads_iframe_HTML:300X250_BOTTOM_RIGHT_HOME"]',
+									   '//*[@id="google_ads_iframe_/7264676/300x600_sidebar_home_0"]',
+									   '//*[@id="google_ads_iframe_sidebar_middle_home_300x250"]',
+
+									   
+									 ],
+									 'type':'google_iframe'},
+			'http://tvonenews.com.cy/': {'urls':
+									  ['//*[@id="google_ads_iframe_/17337359/Slot1_0"]',
+									   '//*[@id="google_ads_iframe_/17337359/Slot2_0"]',
+									   '//*[@id="google_ads_iframe_/17337359/Slot3_0"]',
+									   '//*[@id="google_ads_iframe_/17337359/Slot7_0"]',
+									   '//*[@id="google_ads_iframe_/17337359/Slot8_0"]',
+									   '//*[@id="google_ads_iframe_/17337359/Slot9_0"]',
+									   '//*[@id="google_ads_iframe_/17337359/Slot10_0"]',
+									 ],
+									 'type':'google_iframe'},
 }
 
 
 	for url in url_list:
 		print '[+] Retrieving Gifs in URL: ',url
-		if 'onlycy' in url:
-			if gifs_paths[url]['type'] == 'sub_sub_google_iframe':
-				gifs_url = sub_subiframe_get_gifs_urls(url, gifs_paths[url]['urls'])
-				print '[+] All Gif links',gifs_url	
-				save_new_gifs(gifs_url)
-			if gifs_paths[url]['type'] == 'google_sub_iframes':
-				gifs_url = subiframe_get_gifs_urls(url, gifs_paths[url]['urls'])
-				print '[+] All Gif links',gifs_url	
-				save_new_gifs(gifs_url)
-			if gifs_paths[url]['type'] == 'google_iframe':
-				gifs_url = iframe_get_gifs_urls(url, gifs_paths[url]['urls'])
-				print '[+] All Gif links',gifs_url	
-				save_new_gifs(gifs_url)
-			if gifs_paths[url]['type'] == 'easyenergy':
-				gifs_url = easyenergy_get_gifs_url(url, gifs_paths[url]['urls'])
-				print '[+] All Gif links',gifs_url	
-				save_new_gifs(gifs_url)
-			if gifs_paths[url]['type'] == 'image_in_source':
-				gifs_url = images_in_source(url, gifs_paths[url]['urls'])
-				print '[+] All Gif links',gifs_url	
-				save_new_gifs(gifs_url)
-		
+		if gifs_paths[url]['type'] == 'sub_sub_google_iframe':
+			gifs_url = sub_subiframe_get_gifs_urls(url, gifs_paths[url]['urls'])
+			print '[+] All Gif links',gifs_url	
+			save_new_gifs(gifs_url)
+		if gifs_paths[url]['type'] == 'google_sub_iframes':
+			gifs_url = subiframe_get_gifs_urls(url, gifs_paths[url]['urls'])
+			print '[+] All Gif links',gifs_url	
+			save_new_gifs(gifs_url)
+		if gifs_paths[url]['type'] == 'google_iframe':
+			gifs_url = iframe_get_gifs_urls(url, gifs_paths[url]['urls'])
+			print '[+] All Gif links',gifs_url	
+			save_new_gifs(gifs_url)
+		if gifs_paths[url]['type'] == 'easyenergy':
+			gifs_url = easyenergy_get_gifs_url(url, gifs_paths[url]['urls'])
+			print '[+] All Gif links',gifs_url	
+			save_new_gifs(gifs_url)
+		if gifs_paths[url]['type'] == 'image_in_source':
+			gifs_url = images_in_source(url, gifs_paths[url]['urls'])
+			print '[+] All Gif links',gifs_url	
+			save_new_gifs(gifs_url)
+	
