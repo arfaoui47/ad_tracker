@@ -6,6 +6,7 @@ from save import save_new_gifs
 import requests
 import time
 
+
 def iframe_get_gifs_urls(url, iframes):
 	driver = webdriver.Firefox()
 	driver.get(url)
@@ -27,6 +28,32 @@ def iframe_get_gifs_urls(url, iframes):
 		except Exception, e:
 			print '[-] iframe fialed: ', iframe
 			print '[-] Exception: ', str(e)
+	driver.close()
+	return gifs_urls
+
+
+def adstore_get_gifs_urls(url, iframes):
+	driver = webdriver.Firefox()
+	driver.get(url)
+	gifs_urls = set()
+	iframe = "//iframe[contains(@src, 'http://ads.adstore.com.cy/')]"	
+	try:
+		print '[+] iframe:',iframe
+		frame_found = WebDriverWait(driver, 10).until(lambda driver:driver.find_elements_by_xpath(iframe))
+		print frame_found
+		for i in frame_found:
+			driver.switch_to_frame(i)
+			result =  driver.page_source
+			tree = html.fromstring(str(result.encode('utf-8')))
+			imgs=tree.xpath('//img/@src')
+			print "########", imgs  							 # for debugging 
+			for i in imgs:
+				if 'adstore_icon_on' not in i:   #some images are 
+					gifs_urls.add(i)
+			driver.switch_to_default_content()
+	except Exception, e:
+		print '[-] iframe fialed: ', iframe
+		print '[-] Exception: ', str(e)
 	driver.close()
 	return gifs_urls
 
@@ -61,7 +88,7 @@ def subiframe_get_gifs_urls(url, iframes):
 			frame_found2 = WebDriverWait(driver, 10).until(lambda driver:driver.find_element_by_xpath(iframe2))
 			driver.switch_to_frame(frame_found2)
 			result2 = driver.page_source
-			print '****      ', result2
+			# print '****      ', result2
 			
 			# frames = WebDriverWait(driver, 10).until(lambda driver:driver.find_elements_by_tag_name('iframe'))
 			# for child_frame in frames:
@@ -81,13 +108,13 @@ def subiframe_get_gifs_urls(url, iframes):
 			driver.switch_to_frame(frame_found3)
 			result3 = driver.page_source
 			print '****      ', result3
-			tree3 = html.fromstring(str(result2.encode('utf-8')))
+			tree3 = html.fromstring(str(result3.encode('utf-8')))
 			time.sleep(2)
 			imgs=tree3.xpath('//img/@src')
 			print "########", imgs  							 # for debugging 
-			for i in imgs:
-				if 'www.google.com/ads/measurement/' and '//www.gstatic.com' not in i:   #some images are 
-					gifs_urls.append(i)
+			# for i in imgs:
+			# 	if 'www.google.com/ads/measurement/' and '//www.gstatic.com' not in i:   #some images are 
+			gifs_urls=imgs
 			driver.switch_to_default_content()
 		except Exception, e:
 			print '[-] iframe fialed: ', iframe
@@ -167,7 +194,7 @@ if __name__ == '__main__':
 				'http://www.i-eidisi.com/', 'http://www.ilovestyle.com/', 'http://www.kathimerini.com.cy/',
 				'http://www.kerkida.net/','http://www.omonoia24.com/', 'http://www.onlycy.com/',
 				'http://www.philenews.com/', 'http://www.stockwatch.com.cy/', 'http://www.timeoutcyprus.com/',
-				'http://tvonenews.com.cy/', 'http://cyprustimes.com/'
+				'http://tvonenews.com.cy/', 'http://cyprustimes.com/','http://www.24sports.com.cy/'
 				]
 	gifs_paths = {
 			'http://www.sigmalive.com':{'urls':
@@ -257,7 +284,7 @@ if __name__ == '__main__':
 									   "//iframe[contains(@src, 'http://ads.adstore.com.cy/__gb/?zonid=6&sizid=2&')]",
 									   "//iframe[contains(@src, 'http://ads.adstore.com.cy/__gb/?zonid=6&sizid=3&')]"
 									 ],
-									 'type':'google_iframe'},
+									 'type':'adstore'},
 
 			'http://www.kerkida.net/': {'urls':
 									  ['//*[@id="google_ads_iframe_/38893584/kerkida_fp_1_0"]',
@@ -356,12 +383,22 @@ if __name__ == '__main__':
 									  ],
 									  'type':'google_sub_iframes'
 									 },
-}
 
+			'http://www.24sports.com.cy/': {'urls':
+									  ["//iframe[contains(@src, 'http://ads.adstore.com.cy/__gb/?zonid=3&sizid=1&')]",
+									   "//iframe[contains(@src, 'http://ads.adstore.com.cy/__gb/?zonid=6&sizid=2&')]",
+									   "//iframe[contains(@src, 'http://ads.adstore.com.cy/__gb/?zonid=6&sizid=3&')]"
+									 ],
+									 'type':'adstore'},
+}
 
 	for url in url_list:
 		print '[+] Retrieving Gifs in URL: ',url
-		if 'cyprustimes' in url:
+		if '24sports' in url or 'kathimerini' in url:
+			if gifs_paths[url]['type'] == 'adstore':
+				gifs_url = adstore_get_gifs_urls(url, gifs_paths[url]['urls'])
+				print '[+] All Gif links',gifs_url	
+				save_new_gifs(gifs_url)
 			if gifs_paths[url]['type'] == 'sub_sub_google_iframe':
 				gifs_url = sub_subiframe_get_gifs_urls(url, gifs_paths[url]['urls'])
 				print '[+] All Gif links',gifs_url	
