@@ -394,7 +394,7 @@ if __name__ == '__main__':
 
 	for url in url_list:
 		print '[+] Retrieving Gifs in URL: ',url
-		if '24sports' in url or 'kathimerini' in url:
+		if  True:
 			if gifs_paths[url]['type'] == 'adstore':
 				gifs_url = adstore_get_gifs_urls(url, gifs_paths[url]['urls'])
 				print '[+] All Gif links',gifs_url	
