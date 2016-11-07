@@ -11,6 +11,7 @@ def iframe_get_gifs_urls(url, iframes):
 	driver = webdriver.Firefox()
 	driver.get(url)
 	gifs_urls = set()
+	not_images = ['www.google.com/ads/measurement/', 'gstatic', 'doubleclick', 'cat.nl.eu.criteo.com/delivery']
 	for iframe in iframes:
 		try:
 			print '[+] iframe:',iframe
@@ -22,7 +23,7 @@ def iframe_get_gifs_urls(url, iframes):
 			imgs=tree.xpath('//img/@src')
 			print "########", imgs  							 # for debugging 
 			for i in imgs:
-				if 'www.google.com/ads/measurement/' not in i and 'gstatic' not in i:   #some images are 
+				if all(j not in i for j in not_images):   #some images are 
 					gifs_urls.add(i)
 			driver.switch_to_default_content()
 		except Exception, e:
@@ -66,10 +67,50 @@ def get_all_iframes_id():
 		iframes.append(child_frame.get_attribute('id'))
 	driver.close()
 	return iframes
-def subiframe_get_gifs_urls(url, iframes):
+
+def three_iframes(url, iframes):
 	driver = webdriver.Firefox()
 	driver.get(url)
 	gifs_urls = []
+	for iframe in iframes:
+		iframe1,iframe2,iframe3=iframe
+		try:
+			print '[+] iframe:',iframe
+			frame_found1 = WebDriverWait(driver, 10).until(lambda driver:driver.find_element_by_xpath(iframe1))
+			driver.switch_to_frame(frame_found1)
+			result1 = driver.page_source
+			print '111111      ', result1
+			tree1 = html.fromstring(str(result1.encode('utf-8')))
+			time.sleep(1)
+			
+			# iframe2='//*[@id="aswift_0"]'
+			frame_found2 = WebDriverWait(driver, 10).until(lambda driver:driver.find_element_by_xpath(iframe2))
+			driver.switch_to_frame(frame_found2)
+			result2 = driver.page_source
+			print '222222', result2
+			# iframe3='//*[@id="google_ads_frame1"]'
+			print iframe3
+			frame_found3 = WebDriverWait(driver, 15).until(lambda driver:driver.find_element_by_xpath(iframe3))
+			driver.switch_to_frame(frame_found3)
+			result3 = driver.page_source
+			print '333333', result3
+			tree3 = html.fromstring(str(result3.encode('utf-8')))
+			time.sleep(2)
+			imgs=tree3.xpath('//img/@src')
+			print "########", imgs  							 # for debugging 
+			gifs_urls=imgs
+			driver.switch_to_default_content()
+		except Exception, e:
+			print '[-] iframe fialed: ', iframe
+			print '[-] Exception: ', str(e)
+	# driver.close()
+	return gifs_urls
+
+
+def subiframe_get_gifs_urls(url, iframes):
+	driver = webdriver.Firefox()
+	driver.get(url)
+	gifs_urls = set()
 	for iframe in iframes:
 		try:
 			print '[+] iframe:',iframe
@@ -104,22 +145,46 @@ def subiframe_get_gifs_urls(url, iframes):
 				# iframe3='//*[@id={}]'.format(`frame_id`)
 			iframe3='//*[@id="google_ads_frame1"]'
 			print iframe3
-			frame_found3 = WebDriverWait(driver, 15).until(lambda driver:driver.find_element_by_xpath(iframe3))
+			frame_found3 = WebDriverWait(driver, 10).until(lambda driver:driver.find_element_by_xpath(iframe3))
 			driver.switch_to_frame(frame_found3)
 			result3 = driver.page_source
 			print '****      ', result3
 			tree3 = html.fromstring(str(result3.encode('utf-8')))
 			time.sleep(2)
-			imgs=tree3.xpath('//img/@src')
+			frames = WebDriverWait(driver, 10).until(lambda driver:driver.find_elements_by_tag_name('iframe'))
+			print """
+
+				strat last frame
+
+			"""
+			for child_frame in frames:
+				frame_id = child_frame.get_attribute('id')
+				print frame_id
+				print ''
+				print driver.page_source
+				print ''
+			
+			try:
+				pass
+				# last_frame = WebDriverWait(driver, 10).until(lambda driver:driver.find_element_by_xpath(iframe3))
+				# driver.switch_to_frame(last_frame)
+				# result_last = driver.page_source
+				# tree_last = html.fromstring(str(result_last.encode('utf-8')))
+				# imgs = tree_last.xpath('//img/@src')
+				# print '[++]   ', result_last
+			except Exception, e:
+				raise 'Fuck...'
+			finally:
+				imgs=tree3.xpath('//img/@src')
+			
 			print "########", imgs  							 # for debugging 
-			# for i in imgs:
-			# 	if 'www.google.com/ads/measurement/' and '//www.gstatic.com' not in i:   #some images are 
-			gifs_urls=imgs
+			
+			gifs_urls+=imgs
 			driver.switch_to_default_content()
 		except Exception, e:
 			print '[-] iframe fialed: ', iframe
 			print '[-] Exception: ', str(e)
-	driver.close()
+	# driver.close()
 	return gifs_urls
 
 def sub_subiframe_get_gifs_urls(url, iframes):					# 3 steps iframes
@@ -194,7 +259,8 @@ if __name__ == '__main__':
 				'http://www.i-eidisi.com/', 'http://www.ilovestyle.com/', 'http://www.kathimerini.com.cy/',
 				'http://www.kerkida.net/','http://www.omonoia24.com/', 'http://www.onlycy.com/',
 				'http://www.philenews.com/', 'http://www.stockwatch.com.cy/', 'http://www.timeoutcyprus.com/',
-				'http://tvonenews.com.cy/', 'http://cyprustimes.com/','http://www.24sports.com.cy/'
+				'http://tvonenews.com.cy/', 'http://cyprustimes.com/','http://www.24sports.com.cy/',
+				'https://www.ergodotisi.com/', 'http://offsite.com.cy/', 'http://showbiz.com.cy/', 'http://protathlima.com/'
 				]
 	gifs_paths = {
 			'http://www.sigmalive.com':{'urls':
@@ -257,9 +323,9 @@ if __name__ == '__main__':
 										'type': 'easyenergy'
 										},
 			'https://www.ergodotisi.com/': {'urls':
-									  ['//*[@id="google_esf"]'									  
+									  ['https://ergodotisi.blob.core.windows.net/banners/'									  
 									 ],
-									 'type':'google_iframe'
+									 'type':'image_in_source'
 									 },
 			'http://www.i-eidisi.com/': {'urls':
 										   ['http://www.i-eidisi.com/wp-content/ttprsu'],
@@ -308,7 +374,8 @@ if __name__ == '__main__':
 									 ],
 									 'type':'google_iframe'},	
 			'http://www.philenews.com/': {'urls':
-									  [('//iframe[@id="cdxhd_ifr_159187_10"]', '//iframe[@id="aswift_0"]', '//iframe[@name="google_ads_frame1"]')
+									  [('//iframe[@id="cdxhd_ifr_159187_4"]', '//iframe[@id="aswift_0"]', '//iframe[@id="google_ads_frame1"]'),
+									   ('//iframe[@id="cdxhd_ifr_159187_3"]', '//iframe[@id="aswift_0"]', '//iframe[@id="google_ads_frame1"]')
 
 									  # '//*[@id="cdxhd_ifr_159183_5"]',
 									  # '//*[@id="cdxhd_ifr_159187_3"]',
@@ -316,7 +383,7 @@ if __name__ == '__main__':
 									   # '//*[@id="google_ads_iframe_/38893584/onlycy_new_ap_3_0"]',
 									   # '//*[@id="google_ads_iframe_/38893584/onlycy_new_fp_5_0"]',
 									 ],
-									 'type':'sub_sub_google_iframe'},
+									 'type':'three_iframes'},
 			'http://www.stockwatch.com.cy/': {'urls':
 									  ['//*[@id="google_ads_iframe_/95309258/sw_home_tbr_0"]',
 									   '//*[@id="google_ads_iframe_/95309258/sw_home_tbl_0"]',
@@ -350,16 +417,16 @@ if __name__ == '__main__':
 									 'type':'google_iframe'},
 			'http://www.omonoia24.com/': {'urls':
 									  [
-									  ('//*[@id="aswift_0"]', '//*[@id="google_ads_frame1"]'),
-									  # ('//*[@id="aswift_1"]', '//*[@id="google_ads_frame2"]', '//*[@id="ad_iframe"]'),
+									  ('//*[@id="aswift_0"]', '//*[@id="google_ads_frame1"]', '//*[@id="ad_iframe"]'),
+									  ('//*[@id="aswift_1"]', '//*[@id="google_ads_frame2"]', '//*[@id="ad_iframe"]'),
 									  ],
-									  'type':'google_sub_iframes'
+									  'type':'three_iframes'
 									 },
 			'http://cyprustimes.com/': {'urls':
 									  [
 
 
-									  '//*[@id="cdxhd_ifr_141299_12"]', 
+									  # '//*[@id="cdxhd_ifr_141299_12"]', 
 									  '//*[@id="cdxhd_ifr_130113_1"]', 
 									  '//*[@id="cdxhd_ifr_130107_2"]', 
 									  '//*[@id="cdxhd_ifr_144214_3"]', 
@@ -371,7 +438,7 @@ if __name__ == '__main__':
 									  '//*[@id="cdxhd_ifr_141299_9"]', 
 									  '//*[@id="cdxhd_ifr_141295_10"]', 
 									  '//*[@id="cdxhd_ifr_141297_11"]', 
-									  # '//*[@id="cdxhd_ifr_141299_12"]', 
+									  '//*[@id="cdxhd_ifr_141299_12"]', 
 									  # # '//*[@id="cdxhd_ifr_130113_0"]', 
 									  # '//*[@id="cdxhd_ifr_130113_0"]', 
 									  # '//*[@id="cdxhd_ifr_130113_0"]', 
@@ -390,13 +457,42 @@ if __name__ == '__main__':
 									   "//iframe[contains(@src, 'http://ads.adstore.com.cy/__gb/?zonid=6&sizid=3&')]"
 									 ],
 									 'type':'adstore'},
+			'http://offsite.com.cy/': {'urls':
+									  ['//*[@id="google_ads_iframe_/38893584/offsite-news_fp_S2_300x250_0"]',
+									   '//*[@id="google_ads_iframe_/38893584/offsite-news_fp_S3_300x250_0"]',
+									   '//*[@id="google_ads_iframe_/38893584/offsite-news_fp_S1_300x250_0"]',
+									   '//*[@id="google_ads_iframe_/38893584/offsite-news_fp_B3_728x90_0"]',
+									   '//*[@id="google_ads_iframe_/38893584/offsite-news_fp_S4_300x250_0"]',
+									 ],
+									 'type':'google_iframe'},
+			'http://showbiz.com.cy/': {'urls':
+									  ['//*[@id="cdxhd_ifr_141327_9"]',
+									  # '//*[@id="google_ads_iframe_/126701466/Home_Page_Banner_768x90_1_0"]',
+									  # '//*[@id="google_ads_iframe_/126701466/Home_Page_Banner_Sponsored1_250x326_0"]',
+									  # '//*[@id="google_ads_iframe_/126701466/Home_Page_Banner_300x250_1_0"]',
+									  # '//*[@id="google_ads_iframe_/126701466/Home_Page_Banner_768x90_3_0"]',
+									 ],
+									 'type':'google_iframe'
+									 },
+			'http://protathlima.com/': {'urls':
+									  ['//*[@id="cdxhd_ifr_172880_6"]',
+									   '//*[@id="cdxhd_ifr_141315_5"]',
+									   '//*[@id="cdxhd_ifr_141319_8"]',
+									   '//*[@id="cdxhd_ifr_141320_7"]',
+									   '//*[@id="cdxhd_ifr_141319_11"]',
+									 ],
+									 'type':'google_iframe'},
 }
 
 	for url in url_list:
 		print '[+] Retrieving Gifs in URL: ',url
-		if  True:
+		if 'protathlima' in url:
 			if gifs_paths[url]['type'] == 'adstore':
 				gifs_url = adstore_get_gifs_urls(url, gifs_paths[url]['urls'])
+				print '[+] All Gif links',gifs_url	
+				save_new_gifs(gifs_url)
+			if gifs_paths[url]['type'] == 'three_iframes':
+				gifs_url = three_iframes(url, gifs_paths[url]['urls'])
 				print '[+] All Gif links',gifs_url	
 				save_new_gifs(gifs_url)
 			if gifs_paths[url]['type'] == 'sub_sub_google_iframe':
