@@ -1,4 +1,5 @@
-from selenium import webdriver
+#from selenium import webdriver
+from tor_webdriver import tor_driver
 from selenium.webdriver.support.ui import WebDriverWait
 from lxml import html, etree
 import urllib
@@ -8,7 +9,7 @@ import time
 
 
 def iframe_get_gifs_urls(url, iframes):
-	driver = webdriver.Firefox()
+	driver = tor_driver()
 	driver.get(url)
 	gifs_urls = set()
 	not_images = ['www.google.com/ads/measurement/', 'gstatic', 'doubleclick', 'cat.nl.eu.criteo.com/delivery']
@@ -34,7 +35,7 @@ def iframe_get_gifs_urls(url, iframes):
 
 
 def adstore_get_gifs_urls(url, iframes):
-	driver = webdriver.Firefox()
+	driver = tor_driver()
 	driver.get(url)
 	gifs_urls = set()
 	iframe = "//iframe[contains(@src, 'http://ads.adstore.com.cy/')]"	
@@ -59,7 +60,7 @@ def adstore_get_gifs_urls(url, iframes):
 	return gifs_urls
 
 def get_all_iframes_id():
-	driver = webdriver.Firefox()
+	driver = tor_driver()
 	driver.get(url)
 	iframes = []
 	frame_found2 = WebDriverWait(driver, 10).until(lambda driver:driver.find_elements_by_tag_name('iframe'))
@@ -69,7 +70,7 @@ def get_all_iframes_id():
 	return iframes
 
 def three_iframes(url, iframes):
-	driver = webdriver.Firefox()
+	driver = tor_driver()
 	driver.get(url)
 	gifs_urls = []
 	for iframe in iframes:
@@ -108,7 +109,7 @@ def three_iframes(url, iframes):
 
 
 def subiframe_get_gifs_urls(url, iframes):
-	driver = webdriver.Firefox()
+	driver = tor_driver()
 	driver.get(url)
 	gifs_urls = set()
 	for iframe in iframes:
@@ -188,7 +189,7 @@ def subiframe_get_gifs_urls(url, iframes):
 	return gifs_urls
 
 def sub_subiframe_get_gifs_urls(url, iframes):					# 3 steps iframes
-	driver = webdriver.Firefox()
+	driver = tor_driver()
 	driver.get(url)
 	gifs_urls = []
 	for iframe in iframes:
@@ -486,7 +487,7 @@ if __name__ == '__main__':
 
 	for url in url_list:
 		print '[+] Retrieving Gifs in URL: ',url
-		if 'protathlima' in url:
+		if True:
 			if gifs_paths[url]['type'] == 'adstore':
 				gifs_url = adstore_get_gifs_urls(url, gifs_paths[url]['urls'])
 				print '[+] All Gif links',gifs_url	
