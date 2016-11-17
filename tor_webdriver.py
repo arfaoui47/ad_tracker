@@ -37,7 +37,7 @@ proxy = Proxy({
     'noProxy': ''
 })
 
-def tor_driver():
+def tor_driver():	
 	User_agent = random.choice(uas)
 	resolution = random.choice(sizes)
 	print User_agent
@@ -46,7 +46,7 @@ def tor_driver():
 	display.start()
 	profile = webdriver.FirefoxProfile()
 	profile.set_preference("general.useragent.override", User_agent)
-	driver = webdriver.Firefox(profile, proxy=proxy)
+	driver = webdriver.Firefox(profile, executable_path='./geckodriver', proxy=proxy)
 	driver.set_window_size(*resolution)
 	# return webdriver.Firefox(proxy=proxy), display
 	return driver, display

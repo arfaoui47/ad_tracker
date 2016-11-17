@@ -3,3 +3,5 @@ tests/__pycache__
 cov_html
 .coverage
 rootkey.py
+venv/
+*.log
