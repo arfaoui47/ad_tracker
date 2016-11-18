@@ -23,6 +23,28 @@ Set Privoxy to forward through Tor::
 ```sh
 echo 'echo "forward-socks5 / localhost:9050 ." >> /etc/privoxy/config' | sudo -s
 ```
+Create rootkey.py file with AWS Access Key ID and Secret Access Key:
+```py
+AWSAccessKeyId=""
+AWSSecretKey=""
+```
+Update S3-bucket name in file upload_to_S3.py:
+```py
+from boto.s3.connection import S3Connection
+from boto.s3.key import Key
+from rootkey import *
+import os
+
+def upload_to_S3(md5_hash, file):
+        conn = S3Connection(AWSAccessKeyId, AWSSecretKey)
+        bucket = conn.get_bucket('Bucket-name')                    # Bucket Name
+        k = Key(bucket)
+        k.key = md5_hash 
+        k.set_contents_from_filename(file)
+        k.make_public()
+        os.remove(file)                                                                        
+        print '[+] Deleting file ', file
+```
 Run
 ===
 ```sh
