@@ -1,8 +1,6 @@
-from boto.s3.connection import S3Connection
-from boto.s3.key import Key
-from rootkey import *
-import requests
 from hashlib import md5
+from upload_to_S3 import upload_to_S3
+import requests
 import MySQLdb
 import string 
 import random
@@ -77,17 +75,7 @@ def to_md5(file):
 	check_sum = md5(f).hexdigest()
 	print '[+] hashing file to md5: ', check_sum
 	return check_sum
-
-
-def upload_to_S3(md5_hash, file):
-	conn = S3Connection(AWSAccessKeyId, AWSSecretKey)
-	bucket = conn.get_bucket('adtracker-backet')
-	k = Key(bucket)
-	k.key = md5_hash  # for example, 'images/bob/resized_image1.png'
-	k.set_contents_from_filename(file)
-	k.make_public()
-	os.remove(file)    	 								#remove file after checkusm
-	print '[+] Deleting file ', file		
+	
 
 def get_all_images(urls):
 	pass
@@ -101,7 +89,7 @@ def save_new_gifs(urls):
 		file = image_local_save(url);
 		if file:
 			md5_hash = to_md5(file)
-			# upload_to_S3(md5_hash, file)
+			upload_to_S3(md5_hash, file)
 			if data_retrieve(md5_hash, conn):
 				data_insert(md5_hash, conn)
 			else:
