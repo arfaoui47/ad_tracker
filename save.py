@@ -90,6 +90,10 @@ def save_new_gifs(urls):
 		if file:
 			md5_hash = to_md5(file)
 			upload_to_S3(md5_hash, file)
+			try:
+				os.remove(file)
+			except:
+				pass
 			if data_retrieve(md5_hash, conn):
 				data_insert(md5_hash, conn)
 			else:
