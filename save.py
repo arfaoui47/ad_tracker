@@ -37,7 +37,7 @@ def image_local_save(url):
 	elif url[-3:]=='png':
 		extension='png'
 	name = file_name_generator()
-	file_name = name+'.'+extension
+	file_name = 'local_images/' + name + '.' + extension
 	with open(file_name,'wb') as f:
 		MAX_TRY = 6
 		try_num = 1
