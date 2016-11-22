@@ -6,17 +6,21 @@ import string
 import random
 import os
 import time
+from configparser import ConfigParser
 
 
+config = ConfigParser()
+config.read('conf.ini')
 
 def file_name_generator(size=6, chars=string.ascii_uppercase + string.digits):
 	return ''.join(random.choice(chars) for _ in range(size))
 
 def db_connection():
-	connexion = MySQLdb.connect(host= "localhost",
-                  		   user="root",
-                  		   passwd="arfa47",
-                  		   db="ad_tracker")
+	connexion = MySQLdb.connect(host=config.get('MySQL', 'host'),
+                  		   user=config.get('MySQL', 'user'),
+                  		   passwd=config.get('MySQL', 'password'),
+                  		   db=config.get('MySQL', 'db'))
+	
 	return connexion
 
 
