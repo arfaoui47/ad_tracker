@@ -5,3 +5,5 @@ cov_html
 rootkey.py
 venv/
 *.log
+.idea/
+atest.py
