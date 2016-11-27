@@ -49,7 +49,10 @@ def image_local_save(url):
         img_content = ''
         while try_num <= MAX_TRY and not img_content:
             try:
-                img_content = requests.get(url).content
+                if url.split('/')[0] == 'data:image':
+                    img_content = url.split(',')[1].decode('base64')
+                else:
+                    img_content = requests.get(url).content
             except:
                 time.sleep(3)
                 try_num += 1

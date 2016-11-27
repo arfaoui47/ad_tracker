@@ -39,7 +39,8 @@ def iframe_get_gifs_urls(url):
     imgs = []
     not_ad_images = ['www.google.com/ads/measurement/', 'gstatic',
                      'cat.fr.eu.criteo', 'doubleclick',
-                     'cat.nl.eu.criteo.com/delivery', 'adstore_icon_on.png']
+                     'cat.nl.eu.criteo.com/delivery', 'adstore_icon_on.png',
+                     'xblasterads']
 
     xpaths = ["//iframe[contains(@id, 'google_ads_iframe_')]",
               "//iframe[contains(@src, 'http://ads.adstore.com.cy/')]",
@@ -53,7 +54,8 @@ def iframe_get_gifs_urls(url):
 
     try:
         img_tags = driver.find_elements_by_xpath(
-            "//img[contains(@SRC, 'http://www.easyenergy.com.cy/openx/www/images/')]")
+            "//img[contains(@SRC, 'http://www.easyenergy.com.cy/openx/www/"
+            "images/')]")
         gifs_urls |= set([i.get_attribute('SRC') for i in img_tags])
     except:
         raise
@@ -69,6 +71,7 @@ def iframe_get_gifs_urls(url):
 
 if __name__ == '__main__':
     now = int(time.time() * 1000)
+
     url_list = ['http://www.sigmalive.com', 'http://politis.com.cy',
                 'http://www.24h.com.cy/', 'http://www.alfanews.com.cy/',
                 'http://www.ant1iwo.com/', 'http://www.balla.com.cy/',
