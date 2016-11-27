@@ -11,7 +11,7 @@ def upload_to_S3(md5_hash, file):
     k.key = md5_hash
     k.set_contents_from_filename(file)
     k.make_public()
-    # os.remove(file)    	 								#TODO #remove file after checkusm
+    os.remove(file)    	 			# remove file after checkusm
     print '[+] Deleting file ', file
     url = k.generate_url(expires_in=0, query_auth=False)
     return url

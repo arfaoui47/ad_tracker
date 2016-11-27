@@ -43,20 +43,17 @@ class MockDisplay():
 
 
 def tor_driver():
-    # User_agent = random.choice(uas)
-    # resolution = random.choice(sizes)
-    # print User_agent
-    # print resolution
-    # display = Display(visible=1, size=resolution)
-    # display.start()
-    # profile = webdriver.FirefoxProfile()
-    # profile.set_preference("general.useragent.override", User_agent)
-    # driver = webdriver.Firefox(profile, executable_path='./geckodriver', proxy=proxy)
-    # driver.set_window_size(*resolution)
-    return webdriver.Firefox(executable_path='./geckodriver'), MockDisplay()
-
-
-# return driver, display
+    User_agent = random.choice(uas)
+    resolution = random.choice(sizes)
+    display = Display(visible=0, size=resolution)
+    display.start()
+    profile = webdriver.FirefoxProfile()
+    profile.set_preference("general.useragent.override", User_agent)
+    driver = webdriver.Firefox(profile, executable_path='./geckodriver',
+                               proxy=proxy)
+    driver.set_window_size(*resolution)
+    return driver, display
+    # return webdriver.Firefox(executable_path='./geckodriver'), MockDisplay()
 
 
 if __name__ == '__main__':

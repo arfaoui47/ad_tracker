@@ -1,14 +1,19 @@
 from selenium import webdriver
 from tor_webdriver import tor_driver
-from selenium.webdriver.support.ui import WebDriverWait
 from save import save_new_gifs
-import requests
 import time
 from random import randint
 from collections import deque
 
 
 def r_iframe_lookup(driver, li, imgs):
+    """
+    recursive iframe lookup
+    :param driver: Firefox webdriver
+    :param li: list of iframes to loop through
+    :param imgs: url of static files found in iframes
+    :return:
+    """
     while len(li) > 0:
         iframe = li.popleft()
         try:
@@ -31,8 +36,14 @@ def r_iframe_lookup(driver, li, imgs):
     return imgs
 
 
-def iframe_get_gifs_urls(url):
-    driver = webdriver.Firefox(executable_path='./geckodriver')
+def find_static_files(url):
+    """
+    find all type of static files
+    :param url: website to crawl
+    :return:  list off all static file of a specific website
+    """
+    # driver = webdriver.Firefox(executable_path='./geckodriver')
+    driver = tor_driver()[0]
     driver.get(url)
     gifs_urls = set()
     final_gifs = set()
@@ -45,6 +56,7 @@ def iframe_get_gifs_urls(url):
     ##########################################################################
     #                           ad file in source                            #
     ##########################################################################
+
     image_in_source_urls = {'https://www.ergodotisi.com/':
                             "//img[contains(@SRC, 'https://ergodotisi.blo"
                             "b.core.windows.net/banners/')]",
@@ -66,6 +78,7 @@ def iframe_get_gifs_urls(url):
     ##########################################################################
     #                           3rd-party ads                                #
     ##########################################################################
+
     xpaths = ["//iframe[contains(@id, 'google_ads_iframe_')]",
               "//iframe[contains(@src, 'http://ads.adstore.com.cy/')]",
               "//iframe[contains(@id, 'cdxhd_ifr')]"]
@@ -79,6 +92,7 @@ def iframe_get_gifs_urls(url):
     ##########################################################################
     #                            easyenergy ads                              #
     ##########################################################################
+
     try:
         img_tags = driver.find_elements_by_xpath(
             "//img[contains(@SRC, 'http://www.easyenergy.com.cy/openx/www/"
@@ -88,41 +102,39 @@ def iframe_get_gifs_urls(url):
         raise
 
     for i in gifs_urls:
-        if all(j not in i for j in not_ad_images):  # some images are
+        if all(j not in i for j in not_ad_images):
             final_gifs.add(i)
 
     driver.quit()
-    # tor_driver()[1].stop()
+    tor_driver()[1].stop()
     return final_gifs
 
 
 if __name__ == '__main__':
-    now = int(time.time() * 1000)
 
-    url_list = ['http://www.sigmalive.com', 'http://politis.com.cy',
-                'http://www.24h.com.cy/', 'http://www.alfanews.com.cy/',
-                'http://www.ant1iwo.com/', 'http://www.balla.com.cy/',
-                'http://www.i-eidisi.com/', 'http://www.ilovestyle.com/',
-                'http://www.kathimerini.com.cy/', 'http://www.kerkida.net/',
-                'http://www.omonoia24.com/', 'http://www.onlycy.com/',
-                'http://www.philenews.com/', 'http://www.stockwatch.com.cy/',
-                'http://www.timeoutcyprus.com/', 'http://tvonenews.com.cy/',
-                'http://cyprustimes.com/', 'http://www.24sports.com.cy/',
-                'https://www.ergodotisi.com/', 'http://offsite.com.cy/',
-                'http://showbiz.com.cy/', 'http://protathlima.com/'
-                ]
+    # url_list = ['http://www.sigmalive.com', 'http://politis.com.cy',
+    #             'http://www.24h.com.cy/', 'http://www.alfanews.com.cy/',
+    #             'http://www.ant1iwo.com/', 'http://www.balla.com.cy/',
+    #             'http://www.i-eidisi.com/', 'http://www.ilovestyle.com/',
+    #             'http://www.kathimerini.com.cy/', 'http://www.kerkida.net/',
+    #             'http://www.omonoia24.com/', 'http://www.onlycy.com/',
+    #             'http://www.philenews.com/', 'http://www.stockwatch.com.cy/',
+    #             'http://www.timeoutcyprus.com/', 'http://tvonenews.com.cy/',
+    #             'http://cyprustimes.com/', 'http://www.24sports.com.cy/',
+    #             'https://www.ergodotisi.com/', 'http://offsite.com.cy/',
+    #             'http://showbiz.com.cy/', 'http://protathlima.com/',
+    #             'http://www.tothemaonline.com/', 'http://shootandgoal.com/'
+    #             ]
 
-    # driver = tor_driver()[0]
-    # driver.get("https://check.torproject.org/")
-    # time.sleep(5)
-    # driver.quit()
-    # tor_driver()[1].stop()
+    with open('url_list.txt', 'r') as f:
+        url_list = f.read().splitlines()
 
     while True:
         for url in url_list:
-            if 'eidisi' in url:
+            if 'eidisi' in url or True:
                 print '[+] Retrieving Gifs in URL: ', url
-                gifs_url = iframe_get_gifs_urls(url)
+                gifs_url = find_static_files(url)
                 print '[+] All Gif links', gifs_url
                 save_new_gifs(gifs_url, url)
+
         time.sleep(randint(1200, 1800))

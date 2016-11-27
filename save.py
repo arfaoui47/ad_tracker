@@ -6,6 +6,8 @@ import random
 import time
 from configparser import ConfigParser
 from upload_to_S3 import upload_to_S3
+import os
+
 
 config = ConfigParser()
 config.read('conf.ini')
@@ -62,15 +64,14 @@ def image_local_save(url):
             f.write(img_content)
         else:
             print '[-] Enable to save gif'
-            return 0
+            return {}
     print '[+] Saving Gif to ', file_location
     f.close()
 
     result = {
         'file_location': file_location,
         'extension': extension,
-        'website': url
-    }
+        'website': url}
 
     return result
 
@@ -109,10 +110,10 @@ def save_new_gifs(urls, website):
         if file:
             md5_hash = to_md5(file)
             url_bucket = upload_to_S3(md5_hash, file)
-            # try:                                                                      #TODO
-            #   os.remove(file)
-            # except:
-            #   pass
+            try:
+                os.remove(file)
+            except:
+                pass
             if data_retrieve(md5_hash, conn):
                 data_insert(md5_hash, data, website, url_bucket, conn)
             else:
