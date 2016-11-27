@@ -1,408 +1,87 @@
 from selenium import webdriver
 from tor_webdriver import tor_driver
 from selenium.webdriver.support.ui import WebDriverWait
-from lxml import html, etree
-import urllib
 from save import save_new_gifs
 import requests
 import time
 from random import randint
+from collections import deque
+
+
+def r_iframe_lookup(driver, li, imgs):
+    while len(li) > 0:
+        iframe = li.popleft()
+        try:
+            print '[+]', iframe.get_attribute('ID')
+            driver.switch_to_frame(iframe)
+
+            images_tags = driver.find_elements_by_tag_name("img")
+            imgs_src = [w.get_attribute('SRC') for w in images_tags]
+            imgs += imgs_src
+            try:
+                iframe_list = driver.find_elements_by_tag_name('iframe')
+                dq = deque(iframe_list)
+                r_iframe_lookup(driver, dq, imgs)
+            except:
+                raise
+            finally:
+                driver.switch_to_default_content()
+        except:
+            pass
+    return imgs
 
 
 def iframe_get_gifs_urls(url):
     driver = webdriver.Firefox(executable_path='./geckodriver')
     driver.get(url)
     gifs_urls = set()
-    not_ad_images = ['www.google.com/ads/measurement/', 'gstatic', 'doubleclick', 'cat.nl.eu.criteo.com/delivery',
-                     'adstore_icon_on.png']
-    xpaths = ["//iframe[contains(@id, 'google_ads_iframe_')]", "//iframe[contains(@src, 'http://ads.adstore.com.cy/')]",
-              "//img[contains(@SRC, 'http://www.easyenergy.com.cy/openx/www/images/')]"]
+    final_gifs = set()
+    imgs = []
+    not_ad_images = ['www.google.com/ads/measurement/', 'gstatic',
+                     'cat.fr.eu.criteo', 'doubleclick',
+                     'cat.nl.eu.criteo.com/delivery', 'adstore_icon_on.png']
+
+    xpaths = ["//iframe[contains(@id, 'google_ads_iframe_')]",
+              "//iframe[contains(@src, 'http://ads.adstore.com.cy/')]",
+              "//iframe[contains(@id, 'cdxhd_ifr')]"]
+
     for xpath in xpaths:
         iframes = driver.find_elements_by_xpath(xpath)
         if len(iframes) > 0:
-            break
-        else:
-            continue
+            dq = deque(iframes)
+            gifs_urls |= set(r_iframe_lookup(driver, dq, imgs))
+
     try:
-        if 'easyenergy' in iframes[0].get_attribute('SRC'):
-            static_urls = [i.get_attribute('SRC') for i in iframes]
-            driver.quit()
-            return static_urls
+        img_tags = driver.find_elements_by_xpath(
+            "//img[contains(@SRC, 'http://www.easyenergy.com.cy/openx/www/images/')]")
+        gifs_urls |= set([i.get_attribute('SRC') for i in img_tags])
     except:
-        pass
-    for iframe in iframes:
-        try:
-            print '[+] iframe', iframe.get_attribute('ID')
-            driver.switch_to_frame(iframe)
-            result = driver.page_source
-            tree = html.fromstring(str(result.encode('utf-8')))
-            imgs = tree.xpath('//img/@src')
-            print "########", imgs  # for debugging
-            for i in imgs:
-                if all(j not in i for j in not_ad_images):  # some images are
-                    gifs_urls.add(i)
-            driver.switch_to_default_content()
-        except Exception, e:
-            print '[-] iframe fialed: ', iframe_ID
-            print '[-] Exception: ', str(e)
+        raise
+
+    for i in gifs_urls:
+        if all(j not in i for j in not_ad_images):  # some images are
+            final_gifs.add(i)
+
     driver.quit()
-    # 	tor_driver()[1].stop()
-    return gifs_urls
-
-
-def adstore_get_gifs_urls(url):
-    print "##"
-    driver = tor_driver()[0]
-    driver.get(url)
-    gifs_urls = set()
-    iframe = "//iframe[contains(@src, 'http://ads.adstore.com.cy/')]"
-    try:
-        print '[+] iframe:', iframe
-        frame_found = WebDriverWait(driver, 10).until(lambda driver: driver.find_elements_by_xpath(iframe))
-        print frame_found
-        for i in frame_found:
-            driver.switch_to_frame(i)
-            result = driver.page_source
-            tree = html.fromstring(str(result.encode('utf-8')))
-            imgs = tree.xpath('//img/@src')
-            print "########", imgs  # for debugging
-            for i in imgs:
-                if 'adstore_icon_on' not in i:  # some images are
-                    gifs_urls.add(i)
-            driver.switch_to_default_content()
-    except Exception, e:
-        print '[-] iframe fialed: ', iframe
-        print '[-] Exception: ', str(e)
-    driver.quit()
-    tor_driver()[1].stop()
-    return gifs_urls
-
-
-def get_all_iframes_id():
-    driver = tor_driver()[0]
-    driver.get(url)
-    iframes = []
-    frame_found2 = WebDriverWait(driver, 10).until(lambda driver: driver.find_elements_by_tag_name('iframe'))
-    for child_frame in frame_found2:
-        iframes.append(child_frame.get_attribute('id'))
-    driver.quit()
-    tor_driver()[1].stop()
-    return iframes
-
-
-def three_iframes(url, iframes):
-    driver = tor_driver()[0]
-    driver.get(url)
-    gifs_urls = []
-    for iframe in iframes:
-        iframe1, iframe2, iframe3 = iframe
-        try:
-            print '[+] iframe:', iframe
-            frame_found1 = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(iframe1))
-            driver.switch_to_frame(frame_found1)
-            result1 = driver.page_source
-            print '111111      ', result1
-            tree1 = html.fromstring(str(result1.encode('utf-8')))
-            time.sleep(1)
-
-            # iframe2='//*[@id="aswift_0"]'
-            frame_found2 = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(iframe2))
-            driver.switch_to_frame(frame_found2)
-            result2 = driver.page_source
-            print '222222', result2
-            # iframe3='//*[@id="google_ads_frame1"]'
-            print iframe3
-            frame_found3 = WebDriverWait(driver, 15).until(lambda driver: driver.find_element_by_xpath(iframe3))
-            driver.switch_to_frame(frame_found3)
-            result3 = driver.page_source
-            print '333333', result3
-            tree3 = html.fromstring(str(result3.encode('utf-8')))
-            time.sleep(2)
-            imgs = tree3.xpath('//img/@src')
-            print "########", imgs  # for debugging
-            gifs_urls = imgs
-            driver.switch_to_default_content()
-        except Exception, e:
-            print '[-] iframe fialed: ', iframe
-            print '[-] Exception: ', str(e)
-    driver.quit()
-    tor_driver()[1].stop()
-    return gifs_urls
-
-
-def subiframe_get_gifs_urls(url, iframes):
-    driver = tor_driver()[0]
-    driver.get(url)
-    gifs_urls = set()
-    for iframe in iframes:
-        try:
-            print '[+] iframe:', iframe
-            frame_found1 = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(iframe))
-            driver.switch_to_frame(frame_found1)
-            result1 = driver.page_source
-            # print '111111      ', result1
-            tree1 = html.fromstring(str(result1.encode('utf-8')))
-            time.sleep(1)
-
-            # frame_found2 = WebDriverWait(driver, 10).until(lambda driver:driver.find_elements_by_tag_name('iframe'))
-            # for child_frame in frame_found2:
-            # 	print child_frame.get_attribute('id')
-            # driver.switch_to_default_content()
-            iframe2 = '//*[@id="aswift_0"]'
-            frame_found2 = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(iframe2))
-            driver.switch_to_frame(frame_found2)
-            result2 = driver.page_source
-            # print '****      ', result2
-
-            # frames = WebDriverWait(driver, 10).until(lambda driver:driver.find_elements_by_tag_name('iframe'))
-            # for child_frame in frames:
-            # 	print child_frame.get_attribute('id')
-
-            frames = WebDriverWait(driver, 10).until(lambda driver: driver.find_elements_by_tag_name('iframe'))
-            for child_frame in frames:
-                frame_id = child_frame.get_attribute('id')
-                print frame_id
-                print ''
-                print driver.page_source
-                print ''
-            # iframe3='//*[@id={}]'.format(`frame_id`)
-            iframe3 = '//*[@id="google_ads_frame1"]'
-            print iframe3
-            frame_found3 = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(iframe3))
-            driver.switch_to_frame(frame_found3)
-            result3 = driver.page_source
-            print '****      ', result3
-            tree3 = html.fromstring(str(result3.encode('utf-8')))
-            time.sleep(2)
-            frames = WebDriverWait(driver, 10).until(lambda driver: driver.find_elements_by_tag_name('iframe'))
-            print """
-
-				strat last frame
-
-			"""
-            for child_frame in frames:
-                frame_id = child_frame.get_attribute('id')
-                print frame_id
-                print ''
-                print driver.page_source
-                print ''
-
-            try:
-                pass
-            # last_frame = WebDriverWait(driver, 10).until(lambda driver:driver.find_element_by_xpath(iframe3))
-            # driver.switch_to_frame(last_frame)
-            # result_last = driver.page_source
-            # tree_last = html.fromstring(str(result_last.encode('utf-8')))
-            # imgs = tree_last.xpath('//img/@src')
-            # print '[++]   ', result_last
-            except Exception, e:
-                raise 'Fuck...'
-            finally:
-                imgs = tree3.xpath('//img/@src')
-
-            print "########", imgs  # for debugging
-
-            gifs_urls += imgs
-            driver.switch_to_default_content()
-        except Exception, e:
-            print '[-] iframe fialed: ', iframe
-            print '[-] Exception: ', str(e)
-    driver.quit()
-    tor_driver()[1].stop()
-    return gifs_urls
-
-
-def sub_subiframe_get_gifs_urls(url, iframes):  # 3 steps iframes
-    driver = tor_driver()[0]
-    driver.get(url)
-    gifs_urls = []
-    for iframe in iframes:
-        try:
-            print '[+] iframe:', iframe
-            first_iframe, second_iframe, third_iframe = iframe
-
-            frame_found1 = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(first_iframe))
-            driver.switch_to_frame(frame_found1)
-            result1 = driver.page_source
-            print '111111      ', result1
-            tree1 = html.fromstring(str(result1.encode('utf-8')))
-            time.sleep(1)
-            frame_found2 = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(second_iframe))
-            driver.switch_to_frame(frame_found2)
-            result2 = driver.page_source
-            print '222222222       ', result2
-            tree2 = html.fromstring(str(result2.encode('utf-8')))
-
-            frame_found3 = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(third_iframe))
-            driver.switch_to_frame(frame_found3)
-            result3 = driver.page_source
-            print '3333333      ', result3
-            tree3 = html.fromstring(str(result3.encode('utf-8')))
-
-            frame_found4 = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_tag_name('iframe'))
-            print frame_found4
-            driver.switch_to_frame(frame_found4)
-            result3 = driver.page_source
-            print '44444      ', result3
-            tree3 = html.fromstring(str(result3.encode('utf-8')))
-
-            imgs = tree3.xpath('//img/@src')
-            print "########", imgs  # for debugging
-            for i in imgs:
-                if 'www.google.com/ads/measurement/' and '//www.gstatic.com' not in i:  # some images are
-                    gifs_urls.append(i)
-            driver.switch_to_default_content()
-            driver.switch_to_default_content()
-
-        except Exception, e:
-            print '[-] iframe fialed: ', iframe
-            print '[-] Exception: ', str(e)
-    driver.quit()
-    tor_driver()[1].stop()
-    return gifs_urls
-
-
-def images_in_source(url, paths):
-    page = requests.get(url)
-    tree = html.fromstring(page.content)
-    imgs = []
-    for path in paths:
-        imgs += tree.xpath('//img[contains(@src, {})]/@src'.format(`path`))
-    for i in imgs:
-        if i[0] == '/':
-            imgs.append(url + i)
-            imgs.remove(i)
-    return imgs
+    # tor_driver()[1].stop()
+    return final_gifs
 
 
 if __name__ == '__main__':
     now = int(time.time() * 1000)
-    url_list = ['http://www.sigmalive.com', 'http://politis.com.cy', 'http://www.24h.com.cy/',
-                'http://www.alfanews.com.cy/', 'http://www.ant1iwo.com/', 'http://www.balla.com.cy/',
-                'http://www.i-eidisi.com/', 'http://www.ilovestyle.com/', 'http://www.kathimerini.com.cy/',
-                'http://www.kerkida.net/', 'http://www.omonoia24.com/', 'http://www.onlycy.com/',
-                'http://www.philenews.com/', 'http://www.stockwatch.com.cy/', 'http://www.timeoutcyprus.com/',
-                'http://tvonenews.com.cy/', 'http://cyprustimes.com/', 'http://www.24sports.com.cy/',
-                'https://www.ergodotisi.com/', 'http://offsite.com.cy/', 'http://showbiz.com.cy/',
-                'http://protathlima.com/'
+    url_list = ['http://www.sigmalive.com', 'http://politis.com.cy',
+                'http://www.24h.com.cy/', 'http://www.alfanews.com.cy/',
+                'http://www.ant1iwo.com/', 'http://www.balla.com.cy/',
+                'http://www.i-eidisi.com/', 'http://www.ilovestyle.com/',
+                'http://www.kathimerini.com.cy/', 'http://www.kerkida.net/',
+                'http://www.omonoia24.com/', 'http://www.onlycy.com/',
+                'http://www.philenews.com/', 'http://www.stockwatch.com.cy/',
+                'http://www.timeoutcyprus.com/', 'http://tvonenews.com.cy/',
+                'http://cyprustimes.com/', 'http://www.24sports.com.cy/',
+                'https://www.ergodotisi.com/', 'http://offsite.com.cy/',
+                'http://showbiz.com.cy/', 'http://protathlima.com/'
                 ]
-    gifs_paths = {
-        'http://www.sigmalive.com': {
-            'type': 'google_iframe'
-        },
-        'http://politis.com.cy': {
-            'type': 'google_iframe'
-        },
-        'http://www.24h.com.cy/': {
-            'type': 'google_iframe'
-        },
-        'http://www.alfanews.com.cy/': {'urls':
-                                            ['http://www.alfanews.com.cy/images/banners'],
-                                        'type': 'image_in_source'
-                                        },
-        'http://www.ant1iwo.com/': {
-            'type': 'google_iframe'
-        },
-        'http://www.balla.com.cy/': {
-            'type': 'google_iframe'
-        },
-        'https://www.ergodotisi.com/': {'urls':
-                                            ['https://ergodotisi.blob.core.windows.net/banners/'
-                                             ],
-                                        'type': 'image_in_source'
-                                        },
-        'http://www.i-eidisi.com/': {'urls':
-                                         ['http://www.i-eidisi.com/wp-content/ttprsu'],
-                                     'type': 'image_in_source'
-                                     },
-        'http://www.ilovestyle.com/': {
-            'type': 'google_iframe'
-        },
-        'http://www.kathimerini.com.cy/': {
-            'type': 'google_iframe'},
 
-        'http://www.kerkida.net/': {
-            'type': 'google_iframe'},
-        'http://www.onlycy.com/': {
-            'type': 'google_iframe'},
-        'http://www.philenews.com/': {'urls':
-                                          [('//iframe[@id="cdxhd_ifr_159187_4"]', '//iframe[@id="aswift_0"]',
-                                            '//iframe[@id="google_ads_frame1"]'),
-                                           ('//iframe[@id="cdxhd_ifr_159187_3"]', '//iframe[@id="aswift_0"]',
-                                            '//iframe[@id="google_ads_frame1"]')
-
-                                           # '//*[@id="cdxhd_ifr_159183_5"]',
-                                           # '//*[@id="cdxhd_ifr_159187_3"]',
-
-                                           # '//*[@id="google_ads_iframe_/38893584/onlycy_new_ap_3_0"]',
-                                           # '//*[@id="google_ads_iframe_/38893584/onlycy_new_fp_5_0"]',
-                                           ],
-                                      'type': 'three_iframes'},
-        'http://www.stockwatch.com.cy/': {
-            'type': 'google_iframe'},
-
-        'http://www.timeoutcyprus.com/': {
-            'type': 'google_iframe'},
-        'http://tvonenews.com.cy/': {
-
-            'type': 'google_iframe'},
-        'http://www.omonoia24.com/': {'urls':
-            [
-                ('//*[@id="aswift_0"]', '//*[@id="google_ads_frame1"]', '//*[@id="ad_iframe"]'),
-                ('//*[@id="aswift_1"]', '//*[@id="google_ads_frame2"]', '//*[@id="ad_iframe"]'),
-            ],
-            'type': 'three_iframes'
-        },
-        'http://cyprustimes.com/': {'urls':
-            [
-
-                # '//*[@id="cdxhd_ifr_141299_12"]',
-                '//*[@id="cdxhd_ifr_130113_1"]',
-                '//*[@id="cdxhd_ifr_130107_2"]',
-                '//*[@id="cdxhd_ifr_144214_3"]',
-                '//*[@id="cdxhd_ifr_144214_4"]',
-                '//*[@id="cdxhd_ifr_141296_5"]',
-                '//*[@id="cdxhd_ifr_141295_6"]',
-                '//*[@id="cdxhd_ifr_141298_7"]',
-                '//*[@id="cdxhd_ifr_141297_8"]',
-                '//*[@id="cdxhd_ifr_141299_9"]',
-                '//*[@id="cdxhd_ifr_141295_10"]',
-                '//*[@id="cdxhd_ifr_141297_11"]',
-                '//*[@id="cdxhd_ifr_141299_12"]',
-                # # '//*[@id="cdxhd_ifr_130113_0"]',
-                # '//*[@id="cdxhd_ifr_130113_0"]',
-                # '//*[@id="cdxhd_ifr_130113_0"]',
-                # '//*[@id="cdxhd_ifr_130113_0"]',
-                # '//*[@id="cdxhd_ifr_130113_0"]',
-                # '//*[@id="cdxhd_ifr_130113_0"]',
-
-                # ('//*[@id="aswift_1"]', '//*[@id="google_ads_frame2"]', '//*[@id="ad_iframe"]'),
-            ],
-            'type': 'google_sub_iframes'
-        },
-
-        'http://www.24sports.com.cy/': {
-            'type': 'google_iframe'},
-        'http://offsite.com.cy/': {
-            'type': 'google_iframe'},
-        'http://showbiz.com.cy/': {'urls':
-                                       ['//*[@id="cdxhd_ifr_141327_9"]',
-                                        # '//*[@id="google_ads_iframe_/126701466/Home_Page_Banner_768x90_1_0"]',
-                                        # '//*[@id="google_ads_iframe_/126701466/Home_Page_Banner_Sponsored1_250x326_0"]',
-                                        # '//*[@id="google_ads_iframe_/126701466/Home_Page_Banner_300x250_1_0"]',
-                                        # '//*[@id="google_ads_iframe_/126701466/Home_Page_Banner_768x90_3_0"]',
-                                        ],
-                                   'type': 'subbbbgoogle_iframe'
-                                   },
-        'http://protathlima.com/': {'urls':
-                                        ['//*[@id="cdxhd_ifr_172880_6"]',
-                                         '//*[@id="cdxhd_ifr_141315_5"]',
-                                         '//*[@id="cdxhd_ifr_141319_8"]',
-                                         '//*[@id="cdxhd_ifr_141320_7"]',
-                                         '//*[@id="cdxhd_ifr_141319_11"]',
-                                         ],
-                                    'type': 'sbbbgoogle_iframe'},
-    }
     # driver = tor_driver()[0]
     # driver.get("https://check.torproject.org/")
     # time.sleep(5)
@@ -411,26 +90,8 @@ if __name__ == '__main__':
 
     while True:
         for url in url_list:
-            if gifs_paths[url]['type'] == 'google_iframe':
-                print '[+] Retrieving Gifs in URL: ', url
-                if gifs_paths[url]['type'] == 'three_iframes':
-                    gifs_url = three_iframes(url, gifs_paths[url]['urls'])
-                    print '[+] All Gif links', gifs_url
-                    save_new_gifs(gifs_url)
-                if gifs_paths[url]['type'] == 'sub_sub_google_iframe':
-                    gifs_url = sub_subiframe_get_gifs_urls(url, gifs_paths[url]['urls'])
-                    print '[+] All Gif links', gifs_url
-                    save_new_gifs(gifs_url)
-                if gifs_paths[url]['type'] == 'google_sub_iframes':
-                    gifs_url = subiframe_get_gifs_urls(url, gifs_paths[url]['urls'])
-                    print '[+] All Gif links', gifs_url
-                    save_new_gifs(gifs_url)
-                if gifs_paths[url]['type'] == 'google_iframe':
-                    gifs_url = iframe_get_gifs_urls(url)
-                    print '[+] All Gif links', gifs_url
-                    save_new_gifs(gifs_url)
-                if gifs_paths[url]['type'] == 'image_in_source':
-                    gifs_url = images_in_source(url, gifs_paths[url]['urls'])
-                    print '[+] All Gif links', gifs_url
-                    save_new_gifs(gifs_url)
+            print '[+] Retrieving Gifs in URL: ', url
+            gifs_url = iframe_get_gifs_urls(url)
+            print '[+] All Gif links', gifs_url
+            save_new_gifs(gifs_url, url)
         time.sleep(randint(1200, 1800))

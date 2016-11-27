@@ -1,12 +1,11 @@
 from hashlib import md5
-from upload_to_S3 import upload_to_S3
 import requests
 import MySQLdb
 import string
 import random
-import os
 import time
 from configparser import ConfigParser
+from upload_to_S3 import upload_to_S3
 
 config = ConfigParser()
 config.read('conf.ini')
@@ -27,7 +26,7 @@ def db_connection():
 
 def data_retrieve(data, connexion):
     cursor = connexion.cursor()
-    cursor.execute("select * from images where checksum={}".format(`data`))
+    cursor.execute("select * from images where checksum={}".format(repr(data)))
     result = cursor.fetchall()
     print '[+] retrieving data ...'
     return True if len(result) == 0 else False
@@ -43,8 +42,8 @@ def image_local_save(url):
     elif url[-3:] == 'png':
         extension = 'png'
     name = file_name_generator()
-    file_name = 'local_images/' + name + '.' + extension
-    with open(file_name, 'wb') as f:
+    file_location = 'local_images/' + name + '.' + extension
+    with open(file_location, 'wb') as f:
         MAX_TRY = 6
         try_num = 1
         img_content = ''
@@ -61,19 +60,32 @@ def image_local_save(url):
         else:
             print '[-] Enable to save gif'
             return 0
-    print '[+] Saving Gif to ', file_name
+    print '[+] Saving Gif to ', file_location
     f.close()
-    return file_name
+
+    result = {
+        'file_location': file_location,
+        'extension': extension,
+        'website': url
+    }
+
+    return result
 
 
-def data_insert(data, connexion):
+def data_insert(md5_hash, data, website, url_bucket, connexion):
     cursor = connexion.cursor()
     try:
-        cursor.execute("INSERT INTO images(checksum, date_creation) VALUES ({},{})".format(
-            `data`, `time.strftime('%Y-%m-%d %H:%M:%S')`))
+        cursor.execute("INSERT INTO images(checksum, date_creation, url,"
+                       " website, file_type) VALUES ({},{},{},{},{})".format(
+                           repr(md5_hash), repr(
+                               time.strftime('%Y-%m-%d %H:%M:%S')),
+                           repr(url_bucket), repr(website),
+                           repr(data['extension'])))
+
         print '[+] Saving to MySQL database ...'
         connexion.commit()
     except:
+        raise
         print '[-] Fail to save to DB !'
         connexion.rollback()
 
@@ -85,31 +97,26 @@ def to_md5(file):
     return check_sum
 
 
-def get_all_images(urls):
-    pass
-
-
-def save_new_gifs(urls):
+def save_new_gifs(urls, website):
     conn = db_connection()
+
     for url in urls:
-        # if 'tpc' in url:
-        file = image_local_save(url);
+        data = image_local_save(url)
+        file = data.get('file_location', 0)
         if file:
             md5_hash = to_md5(file)
-            upload_to_S3(md5_hash, file)
-            # try:																		#TODO
-            # 	os.remove(file)
+            url_bucket = upload_to_S3(md5_hash, file)
+            # try:                                                                      #TODO
+            #   os.remove(file)
             # except:
-            # 	pass
+            #   pass
             if data_retrieve(md5_hash, conn):
-                data_insert(md5_hash, conn)
+                data_insert(md5_hash, data, website, url_bucket, conn)
             else:
                 print '[-] Data is already in database'
             print
 
 
 if __name__ == '__main__':
-    # urls = ['https://tpc.googlesyndication.com/simgad/1751857741877065419']
-    # urls = ['https://tpc.googlesyndication.com/simgad/8537187466804554545']
-    urls = ['http://ds.serving-sys.com/BurstingRes///Site-83489/Type-0/768420c0-8760-431a-ad87-3b79c160c867.jpg']
-    save_new_gifs(urls)
+    urls = ['https://tpc.googlesyndication.com/simgad/8537187466804554545']
+    save_new_gifs(urls, 'sigma')
