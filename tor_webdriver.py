@@ -13,7 +13,7 @@ def LoadUserAgents(uafile):
     with open(uafile, 'rb') as uaf:
         for ua in uaf.readlines():
             if ua:
-                uas.append(ua.strip()[1:-1 - 1])
+                uas.append(ua.strip()[1:-1])
     random.shuffle(uas)
     return uas
 
@@ -26,7 +26,7 @@ sizes = [(750, 1334), (800, 600), (1080, 1920), (640, 1136), (640, 609),
 
 uas = LoadUserAgents("user_agents.txt")
 
-port = "8118"                                           # The Privoxy (HTTP) port
+port = "8118"                                 # The Privoxy (HTTP) port
 myProxy = "127.0.0.1:" + port
 proxy = Proxy({
     'proxyType': ProxyType.MANUAL,

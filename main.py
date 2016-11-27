@@ -42,6 +42,30 @@ def iframe_get_gifs_urls(url):
                      'cat.nl.eu.criteo.com/delivery', 'adstore_icon_on.png',
                      'xblasterads']
 
+    ##########################################################################
+    #                           ad file in source                            #
+    ##########################################################################
+    image_in_source_urls = {'https://www.ergodotisi.com/':
+                            "//img[contains(@SRC, 'https://ergodotisi.blo"
+                            "b.core.windows.net/banners/')]",
+
+                            'http://www.i-eidisi.com/':
+                                "//img[contains(@SRC, 'http://www.i-eidisi.com"
+                                "/wp-content/ttprsu')]",
+
+                            'http://www.alfanews.com.cy/':
+                                "//img[contains(@SRC, 'http://www.alfanews.com"
+                                ".cy/images/banners')]"}
+
+    if url in image_in_source_urls:
+        for url_static in image_in_source_urls:
+            img_tags = driver.find_elements_by_xpath(
+                image_in_source_urls[url_static])
+            gifs_urls |= set([i.get_attribute('SRC') for i in img_tags])
+
+    ##########################################################################
+    #                           3rd-party ads                                #
+    ##########################################################################
     xpaths = ["//iframe[contains(@id, 'google_ads_iframe_')]",
               "//iframe[contains(@src, 'http://ads.adstore.com.cy/')]",
               "//iframe[contains(@id, 'cdxhd_ifr')]"]
@@ -52,6 +76,9 @@ def iframe_get_gifs_urls(url):
             dq = deque(iframes)
             gifs_urls |= set(r_iframe_lookup(driver, dq, imgs))
 
+    ##########################################################################
+    #                            easyenergy ads                              #
+    ##########################################################################
     try:
         img_tags = driver.find_elements_by_xpath(
             "//img[contains(@SRC, 'http://www.easyenergy.com.cy/openx/www/"
@@ -93,8 +120,9 @@ if __name__ == '__main__':
 
     while True:
         for url in url_list:
-            print '[+] Retrieving Gifs in URL: ', url
-            gifs_url = iframe_get_gifs_urls(url)
-            print '[+] All Gif links', gifs_url
-            save_new_gifs(gifs_url, url)
+            if 'eidisi' in url:
+                print '[+] Retrieving Gifs in URL: ', url
+                gifs_url = iframe_get_gifs_urls(url)
+                print '[+] All Gif links', gifs_url
+                save_new_gifs(gifs_url, url)
         time.sleep(randint(1200, 1800))
