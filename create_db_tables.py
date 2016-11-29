@@ -27,7 +27,8 @@ def create_images_table(connexion):
                     date_creation datetime,
                     url VARCHAR(250),
                     website VARCHAR(100),
-                    file_type VARCHAR(50))""")
+                    file_type VARCHAR(50),
+                    original_url VARCHAR(500))""")
 
 
 if __name__ == '__main__':

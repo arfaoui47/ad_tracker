@@ -71,7 +71,7 @@ def image_local_save(url):
     result = {
         'file_location': file_location,
         'extension': extension,
-        'website': url}
+        'original_url': url}
 
     return result
 
@@ -79,12 +79,18 @@ def image_local_save(url):
 def data_insert(md5_hash, data, website, url_bucket, connexion):
     cursor = connexion.cursor()
     try:
+        if len(data['original_url']) < 500:
+            original_url = str(data['original_url'])
+        else:
+            original_url = 'data:image'
         cursor.execute("INSERT INTO images(checksum, date_creation, url,"
-                       " website, file_type) VALUES ({},{},{},{},{})".format(
-                           repr(md5_hash), repr(
-                               time.strftime('%Y-%m-%d %H:%M:%S')),
+                       " website, file_type, original_url) VALUES ({},{},{},{}"
+                       ",{},{})".format(
+                           repr(md5_hash),
+                           repr(time.strftime('%Y-%m-%d %H:%M:%S')),
                            repr(url_bucket), repr(website),
-                           repr(data['extension'])))
+                           repr(data['extension']),
+                           repr(original_url)))
 
         print '[+] Saving to MySQL database ...'
         connexion.commit()
