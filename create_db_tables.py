@@ -20,15 +20,47 @@ def create_database(config):
 
 
 def create_images_table(connexion):
-    cursor = connexion.cursor()
-    cursor.execute("""CREATE TABLE images (
-                    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                    checksum VARCHAR(256),
-                    date_creation datetime,
-                    url VARCHAR(250),
-                    website VARCHAR(100),
-                    file_type VARCHAR(50),
-                    original_url VARCHAR(500))""")
+    with connexion:
+        cursor = connexion.cursor()
+        cursor.execute("""CREATE TABLE images (
+                        id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                        checksum VARCHAR(256),
+                        date_creation datetime,
+                        url VARCHAR(250),
+                        website VARCHAR(100),
+                        file_type VARCHAR(50),
+                        original_url VARCHAR(500))""")
+
+
+def create_sites_table(connexion):
+    with connexion:
+        cursor = connexion.cursor()
+        cursor.execute("""CREATE TABLE websites (
+                        id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                        domain_name VARCHAR(256))""")
+
+
+def insert_existing_websites(connexion):
+    with connexion:
+        cursor = connexion.cursor()
+        with open('url_list.txt', 'r') as f:
+            url_list = f.read().splitlines()
+            for url in url_list:
+                try:
+                    cursor.execute("""INSERT INTO websites (domain_name)
+                            VALUES ({})""".format(repr(url)))
+                    connexion.commit()
+                except:
+                    print '[-] Failed insert to DB'
+                    connexion.rollback()
+
+
+def find_all_websites(connexion):
+    with connexion:
+        cursor = connexion.cursor()
+        cursor.execute('''SELECT * FROM websites''')
+        result = cursor.fetchall()
+    return [i[1] for i in result]
 
 
 if __name__ == '__main__':
@@ -40,3 +72,5 @@ if __name__ == '__main__':
         pass
     conn = db_connection(config)
     create_images_table(conn)
+    create_sites_table(conn)
+    insert_existing_websites(conn)

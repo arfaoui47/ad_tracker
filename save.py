@@ -96,7 +96,7 @@ def data_insert(md5_hash, data, website, url_bucket, connexion):
         connexion.commit()
     except:
         raise
-        print '[-] Fail to save to DB !'
+        print '[-] Fail to insert data to DB !'
         connexion.rollback()
 
 

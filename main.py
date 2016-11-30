@@ -1,9 +1,11 @@
-from selenium import webdriver
+# from selenium import webdriver
 from tor_webdriver import tor_driver
 from save import save_new_gifs
 import time
 from random import randint
 from collections import deque
+from configparser import ConfigParser
+from create_db_tables import db_connection, find_all_websites
 
 
 def r_iframe_lookup(driver, li, imgs):
@@ -112,23 +114,10 @@ def find_static_files(url):
 
 
 if __name__ == '__main__':
-
-    # url_list = ['http://www.sigmalive.com', 'http://politis.com.cy',
-    #             'http://www.24h.com.cy/', 'http://www.alfanews.com.cy/',
-    #             'http://www.ant1iwo.com/', 'http://www.balla.com.cy/',
-    #             'http://www.i-eidisi.com/', 'http://www.ilovestyle.com/',
-    #             'http://www.kathimerini.com.cy/', 'http://www.kerkida.net/',
-    #             'http://www.omonoia24.com/', 'http://www.onlycy.com/',
-    #             'http://www.philenews.com/', 'http://www.stockwatch.com.cy/',
-    #             'http://www.timeoutcyprus.com/', 'http://tvonenews.com.cy/',
-    #             'http://cyprustimes.com/', 'http://www.24sports.com.cy/',
-    #             'https://www.ergodotisi.com/', 'http://offsite.com.cy/',
-    #             'http://showbiz.com.cy/', 'http://protathlima.com/',
-    #             'http://www.tothemaonline.com/', 'http://shootandgoal.com/'
-    #             ]
-
-    with open('url_list.txt', 'r') as f:
-        url_list = f.read().splitlines()
+    config = ConfigParser()
+    config.read('conf.ini')
+    conn = db_connection(config)
+    url_list = find_all_websites(conn)
 
     while True:
         for url in url_list:
