@@ -121,10 +121,9 @@ if __name__ == '__main__':
 
     while True:
         for url in url_list:
-            if 'eidisi' in url or True:
-                print '[+] Retrieving Gifs in URL: ', url
-                gifs_url = find_static_files(url)
-                print '[+] All Gif links', gifs_url
-                save_new_gifs(gifs_url, url)
+            print '[+] Retrieving Gifs in URL: ', url
+            gifs_url = find_static_files(url)
+            print '[+] All Gif links', gifs_url
+            save_new_gifs(gifs_url, url)
 
         time.sleep(randint(1200, 1800))
