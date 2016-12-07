@@ -1,9 +1,9 @@
 *.pyc
-tests/__pycache__
-cov_html
+backend/tests/__pycache__
+backend/cov_html
 .coverage
-rootkey.py
+backend/rootkey.py
 venv/
 *.log
 .idea/
-atest.py
+backend/atest.py
