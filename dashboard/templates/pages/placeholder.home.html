@@ -1,0 +1,34 @@
+{% extends 'layouts/main.html' %}
+{% block title %}Home{% endblock %}
+{% block content %}
+
+<div>	
+<table class="table table-bordered table-hover">
+ <thead>
+    <tr>
+        <th class="col-sm-2"><a href="{{ sort_by_date }}"> Date Creation <i class="fa fa-sort" aria-hidden="true"></i></a> </th>
+        <th class="col-sm-5"> Image preview </th>
+        <th class="col-sm-1"> Original link </th>
+        <th class="col-sm-2"><a href="{{ sort_by_website }}"> Website <i class="fa fa-sort" aria-hidden="true"></i></a>  </th>
+        <th class="col-sm-1"> File type </th>
+    </tr>
+</thead>
+<tbody>
+    {% for item in result%}
+        <tr style="min-height:200px;">
+            <td class="col-sm-2"> {{ item[2] }} </td>
+            <td class="col-sm-5"> 
+                <a href="{{ item[3] }}">
+                <img src="{{ item[3] }}" class="img-thumbnail" alt="image not found" title=""></a>
+            </td>
+            <td class="col-sm-1"><a href="{{ item[6] }}" class="btn btn-default" role="button">Link</a> </td>
+            <td class="col-sm-2"> {{ item[4] }} </td>
+            <td class="col-sm-1"> {{ item[5] }} </td>
+
+        </tr>
+    {% endfor %}
+</tbody>
+</table>
+
+</div>
+{% endblock %}
