@@ -1,8 +1,0 @@
-boto==2.43.0
-EasyProcess==0.2.3
-lxml==3.6.4
-MySQL-python==1.2.5
-PyVirtualDisplay==0.2.1
-requests==2.12.1
-selenium==3.0.1
-configparser==3.5.0
