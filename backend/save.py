@@ -54,19 +54,22 @@ def data_retrieve(md5_hash, location, connexion):
     :return: False if data is found and True if not
     """
     with connexion:
+        print '[+] retrieving data ...'
         cursor = connexion.cursor()
         cursor.execute("select * from images where checksum={}"
                        .format(repr(md5_hash)))
         all_adverts = cursor.fetchall()
         if len(all_adverts) == 0:
             return True
+        else:
+            print '[-] file is already in database' 
+        
         cursor.execute("select * from images where checksum={} "
-                       "and authorized=True".format(repr(md5_hash)))
+                       "and authorized='True'".format(repr(md5_hash)))
         authorized_adverts = cursor.fetchall()
         if len(authorized_adverts) > 0:
             adtracking_log(md5_hash, location, connexion)
             return False
-        print '[+] retrieving data ...'
 
 
 def image_local_save(url):
@@ -141,7 +144,7 @@ def data_insert(md5_hash, data, website, url_bucket, connexion):
                            repr(url_bucket), repr(website),
                            repr(data.get('extension', 0)),
                            repr(original_url),
-                           repr('True')))
+                           repr('NULL')))
 
         print '[+] Saving to MySQL database ...'
         connexion.commit()
@@ -149,8 +152,7 @@ def data_insert(md5_hash, data, website, url_bucket, connexion):
         raise
         print '[-] Fail to insert data to DB !'
         connexion.rollback()
-    finally:
-        connexion.close()
+
 
 
 def to_md5(file):
@@ -188,7 +190,11 @@ def save_new_gifs(urls, website):
                 data_insert(md5_hash, data, website, url_bucket, conn)
             print
 
+    conn.close()
 
 if __name__ == '__main__':
-    urls = ['https://tpc.googlesyndication.com/simgad/8537187466804554545']
+    urls = ['https://tpc.googlesyndication.com/simgad/8537187466804554545',
+            'https://tpc.googlesyndication.com/simgad/14401369669909578556',
+            'https://tpc.googlesyndication.com/simgad/11150122043232262085',
+            'https://tpc.googlesyndication.com/simgad/16091105791262164897']
     save_new_gifs(urls, 'test.com')

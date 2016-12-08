@@ -67,6 +67,17 @@ def insert_existing_websites(connexion):
                     print '[-] Failed insert to DB'
                     connexion.rollback()
 
+def create_users_table(connexion):
+    with connexion:
+        cursor = connexion.cursor()
+        cursor.execute("""CREATE TABLE users (
+                        uid INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+                        firstname VARCHAR(100) NOT NULL,
+                        lastname VARCHAR(100) NOT NULL,
+                        email VARCHAR(120) NOT NULL UNIQUE,
+                        pwdhash VARCHAR(100) NOT NULL
+                        )""")
+
 
 def find_all_websites(connexion):
     with connexion:
@@ -88,3 +99,4 @@ if __name__ == '__main__':
     create_sites_table(conn)
     insert_existing_websites(conn)
     create_adtracking_table(conn)
+    create_users_table(conn)
