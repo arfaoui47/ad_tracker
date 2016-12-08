@@ -11,13 +11,14 @@ db.init_app(app)
 mysql.init_app(app)
 
 
-@app.route('/')
-def home():
+@app.route('/', methods=['GET', 'POST'])
+def home():   
     if 'email' not in session:
         return render_template('pages/placeholder.notsignin.html')
     else:
-        cur = mysql.connect().cursor()
-        cur.execute('''SELECT * FROM images''')
+        conn = mysql.connect() 
+        cur = conn.cursor()
+        cur.execute('''SELECT * FROM images WHERE authorized="NULL"''')
         rv = cur.fetchall()
         col_key_mapper = {'date': 2,
                           'site': 4}
@@ -32,6 +33,21 @@ def home():
         result = sorted(rv, key=lambda x: x[col_key_mapper[sort]],
                         reverse=reverse)
 
+        if request.method == 'POST':
+            options = request.form['options']
+            track_value = str(options).split()[0]
+            checksum = str(options).split()[1]
+
+            cur.execute(''' UPDATE images SET authorized={} WHERE 
+                        checksum={}'''.format(
+                            repr(track_value), repr(checksum)))
+            conn.commit()
+
+            if track_value == 'True':
+                return redirect(url_for('manage_advert', checksum=checksum))
+            else:
+                return redirect(url_for('home'))
+
         return render_template('pages/placeholder.home.html', result=result,
                                sort_by_date=sort_by_date,
                                sort_by_website=sort_by_website)
@@ -42,13 +58,16 @@ def about():
     return render_template('pages/placeholder.manage.html')
 
 
+@app.route('/advert/<string:checksum>')
+def manage_advert(checksum):
+    return checksum
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = SignupForm()
 
     if request.method == 'POST':
         if form.validate() == False:
-            # print 'ssssssssssss'
             return render_template('forms/register.html', form=form)
         else:
             newuser = User(form.firstname.data, form.lastname.data,
@@ -124,6 +143,10 @@ def internal_error(error):
 def not_found_error(error):
     return render_template('errors/404.html'), 404
 
+'''
+@app.teardown_request
+def shutdown_session(exception=None):
+    db_session.remove()'''
 
 # Default port:
 if __name__ == '__main__':

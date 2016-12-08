@@ -13,7 +13,7 @@ SECRET_KEY = 'my precious'
 MYSQL_DATABASE_USER = 'root'
 MYSQL_DATABASE_HOST = 'localhost'
 MYSQL_DATABASE_PASSWORD = 'arfa47'
-MYSQL_DATABASE_DB = 'Adtracker'
+MYSQL_DATABASE_DB = 'test1'
 # # Connect to the database
 # SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'database.db')
 
