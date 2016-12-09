@@ -2,7 +2,11 @@ from pyvirtualdisplay import Display
 from selenium import webdriver
 from selenium.webdriver.common.proxy import *
 import random
+import os
 
+
+path = os.path.abspath(__file__)
+dir_path = os.path.dirname(path)
 
 def LoadUserAgents(uafile):
     """
@@ -24,7 +28,7 @@ sizes = [(750, 1334), (800, 600), (1080, 1920), (640, 1136), (640, 609),
          (1536, 2048), (480, 800), (600, 1024), (540, 960), (200, 400),
          (1200, 1920)]
 
-uas = LoadUserAgents("user_agents.txt")
+uas = LoadUserAgents(os.path.join(dir_path, "user_agents.txt"))
 
 port = "8118"                                 # The Privoxy (HTTP) port
 myProxy = "127.0.0.1:" + port
@@ -49,7 +53,8 @@ def tor_driver():
     display.start()
     profile = webdriver.FirefoxProfile()
     profile.set_preference("general.useragent.override", User_agent)
-    driver = webdriver.Firefox(profile, executable_path='./geckodriver',
+    driver = webdriver.Firefox(profile,
+                               executable_path=os.path.join(dir_path,'geckodriver'),
                                proxy=proxy)
     driver.set_window_size(*resolution)
     return driver, display
