@@ -197,4 +197,4 @@ if __name__ == '__main__':
             'https://tpc.googlesyndication.com/simgad/14401369669909578556',
             'https://tpc.googlesyndication.com/simgad/11150122043232262085',
             'https://tpc.googlesyndication.com/simgad/16091105791262164897']
-    save_new_gifs(urls, 'test.com')
+    save_new_gifs(urls, 'test4.com')

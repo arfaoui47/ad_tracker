@@ -1,0 +1,161 @@
+{% extends 'layouts/main.html' %}
+{% block content %}
+
+<div class="container">
+<div class="row">
+  <div class="span4"></div>
+  <div class="span4 panel panel-default"><img src="{{ advert.url }}" alt="file" class="center-block"></div>
+  <div class="span4"></div>
+</div>
+
+<div class='row col-md-offset-8' >
+
+<div class='col-md-2'>
+<a href="{{ url_for('manage_advert', checksum=advert.checksum ,edit='true') }}" class="btn btn-default" role="button"> Edit </a>
+</div>
+<div class='col-md-3'>
+<a href="{{ url_for('manage_advert', checksum=advert.checksum ,delete='true') }}" class="btn btn-default" role="button"> Delete ad</a>
+</div>
+<div class="dropdown col-md-4">
+
+    <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">Select Website
+    <span class="caret"></span></button>
+    <ul class="dropdown-menu">
+      {% for website in website_list%}
+                <li><a href="{{ url_for('manage_advert', checksum=advert.checksum ,website=website) }}">{{website}}</a></li>
+      {%else%}
+      <li>{{advert.website}}</li>
+      {%endfor%}
+    </ul>
+</div>
+
+</div>
+</div>
+<br>
+
+
+{% if edit=='false' %}
+
+<div class="container">   
+<table class="table table-bordered table-hover">
+ <thead>
+    <tr class="info">
+        <th class="col-sm-3"> Web Address </th>
+        <th class="col-sm-2"> Date </th>
+        <th class="col-sm-2"> Rate </th>
+        <th class="col-sm-2"> Value </th>
+    </tr>
+</thead>
+<tbody>
+        <tr>
+            <td class="col-sm-3"> {{website_selected}} </td>
+            <td class="col-sm-3"> {{advert.date_creation}} </td>
+            <td class="col-sm-3"> {{advert.rate}} </td>
+            <td class="col-sm-3"> {{advert.value}} </td>
+        </tr>
+</tbody>
+</table>
+</div>
+
+
+<div class="container">   
+<table class="table table-bordered table-hover">
+ <thead>
+    <tr class="info">
+        <th class="col-sm-3"> Description </th>
+    </tr>
+</thead>
+<tbody>
+        <tr>
+            <td class="col-sm-3"> {{advert.description}} </td>
+        </tr>
+</tbody>
+</table>
+
+</div>
+<div class="container">   
+<table class="table table-bordered table-hover">
+ <thead>
+    <tr class="info">
+        <th class="col-sm-3"> Product  <i class="fa fa-caret-down" aria-hidden="true"></i></th>
+        <th class="col-sm-3"> Class <i class="fa fa-caret-down" aria-hidden="true"></i></th>
+        <th class="col-sm-3"> Category <i class="fa fa-caret-down" aria-hidden="true"></i></th>
+        <th class="col-sm-3"> Sector <i class="fa fa-caret-down" aria-hidden="true"></i></th>
+    </tr>
+</thead>
+<tbody>
+        <tr>
+            <td class="col-sm-3"> {{advert.product}} </td>
+            <td class="col-sm-3"> {{advert.class_customer}} </td>
+            <td class="col-sm-3"> {{advert.category}} </td>
+            <td class="col-sm-3"> {{advert.sector}} </td>
+        </tr>
+</tbody>
+</table>
+
+</div>
+
+    {% else %}
+<form method="post" class="form" action="{{url_for('manage_advert', checksum=advert.checksum, edit='false')}}">
+{{ form.hidden_tag() }}
+<div class="container">   
+<table class="table table-bordered table-hover">
+ <thead>
+    <tr class="info">
+        <th class="col-sm-3"> Web Address </th>
+        <th class="col-sm-3"> Date </th>
+        <th class="col-sm-3"> Rate </th>
+        <th class="col-sm-3"> Value </th>
+    </tr>
+</thead>
+<tbody>
+        <tr>
+            <td class="col-sm-3"> {{website_selected}} </td>
+            <td class="col-sm-3"> {{advert.date_creation}} </td>
+            <td class="col-sm-3"> {{ form.rate (class =  'col-sm-12', placeholder = advert.rate)}} </td>
+            <td class="col-sm-3"> {{ form.value (class =  'col-sm-12', placeholder = advert.value)}} </td>
+        </tr>
+</tbody>
+</table>
+</div>
+
+
+<div class="container">   
+<table class="table table-bordered table-hover">
+ <thead>
+    <tr class="info">
+        <th class="col-sm-3"> Description </th>
+    </tr>
+</thead>
+<tbody>
+        <tr>
+            <td class="col-sm-3"> {{ form.description(class =  'col-sm-12', placeholder = advert.description) }} </td>
+        </tr>
+</tbody>
+</table>
+
+</div>
+<div class="container">   
+<table class="table table-bordered table-hover">
+ <thead>
+    <tr class="info">
+        <th class="col-sm-3"> Product  <i class="fa fa-caret-down" aria-hidden="true"></i></th>
+        <th class="col-sm-3"> Class <i class="fa fa-caret-down" aria-hidden="true"></i></th>
+        <th class="col-sm-3"> Category <i class="fa fa-caret-down" aria-hidden="true"></i></th>
+        <th class="col-sm-3"> Sector <i class="fa fa-caret-down" aria-hidden="true"></i></th>
+    </tr>
+</thead>
+<tbody>
+        <tr>
+            <td class="col-sm-3"> {{ form.product (class =  'col-sm-12', placeholder = form.product.label.text)}} </td>
+            <td class="col-sm-3"> {{ form.class_customer (class =  'col-sm-12', placeholder = advert.class_customer)}} </td>
+            <td class="col-sm-3"> {{ form.category (class =  'col-sm-12', placeholder = advert.category)}} </td>
+            <td class="col-sm-3"> {{ form.sector (class =  'col-sm-12', placeholder = advert.sector)}}</td>
+        </tr>
+</tbody>
+</table>
+
+<input type="submit" value="Submit" class="btn btn-primary">
+</form>
+  {% endif %}
+{% endblock %}
