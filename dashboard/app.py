@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, flash, session, url_for, redirect
 from flaskext.mysql import MySQL
 from forms import *
-from models import db, User
+from models import db, User, Advert, Adtracking, Website
 
 
 app = Flask(__name__)
@@ -53,13 +53,94 @@ def home():
                                sort_by_website=sort_by_website)
 
 
-@app.route('/manage')
-def about():
-    return render_template('pages/placeholder.manage.html')
+@app.route('/websites', methods=['GET', 'POST'])
+def manage_websites():
+    form = WebsiteForm()
+    websites = Website.query.filter_by()
+    delete = request.args.get('delete', 'false')
+    edit = request.args.get('edit', 'false')
+
+    if 'email' not in session:
+        return render_template('pages/placeholder.notsignin.html')
+    else:
+        if request.method == 'POST':
+            if edit != 'false':
+                website = Website.query.filter_by(domain_name=edit).first()
+                website.cost = form.cost.data if form.cost.data else 0
+                print website.domain_name
+                print form.cost.data
+                db.session.commit()
+                return redirect(url_for('manage_websites'))
+
+            if not form.validate():
+                return render_template('pages/placeholder.websites.html',
+                            websites=websites, form=form)
+            else:
+                cost = form.cost.data if form.cost.data else 0
+                new_website = Website(form.domain_name.data, cost)
+                db.session.add(new_website)
+                db.session.commit()
+            return redirect(url_for('manage_websites', edit=edit))
+        
+        elif request.method == 'GET':
+            if delete != 'false':
+                Website.query.filter_by(domain_name=delete).delete()
+                db.session.commit()
+            return render_template('pages/placeholder.websites.html',
+                                websites=websites, form=form, edit=edit)
 
 
-@app.route('/advert/<string:checksum>')
+@app.route('/advert/<string:checksum>', methods=['GET', 'POST'])
 def manage_advert(checksum):
+    form = AdvertForm()
+
+    advert = Advert.query.filter_by(checksum=checksum).first()
+    adtracking = Adtracking.query.filter_by(checksum=checksum)
+
+    edit = request.args.get('edit', 'false')
+    delete = request.args.get('delete', 'false')
+    website_selected = request.args.get('website', advert.website)
+
+    website_list = [ad.location for ad in adtracking]
+
+    if request.method == 'POST':
+        if form.validate() == False:
+            return render_template('pages/advert.html', form=form, advert=advert)
+        else:
+            advert.description = form.description.data if form.description.data else advert.description
+            if not form.rate.data:
+                if not advert.rate:
+                    advert.rate = 0
+            else:
+                advert.rate = form.rate.data
+
+            if not form.value.data:
+                if not advert.rate:
+                    advert.rate = 0
+            else:
+                advert.value = form.value.data
+
+            advert.product = form.product.data if form.product.data else advert.product
+            advert.class_customer = form.class_customer.data if form.class_customer.data else advert.class_customer
+            advert.category = form.category.data if form.category.data else advert.category
+            advert.sector = form.sector.data if form.sector.data else advert.sector
+            advert.image_id = form.image_id.data
+            db.session.commit()
+            return redirect(url_for('manage_advert', checksum=checksum))
+
+    elif request.method == 'GET':
+        
+        
+        if delete == 'true':
+            Advert.query.filter_by(checksum=checksum).delete()
+            db.session.commit()
+            return redirect(url_for('home'))
+        
+        return render_template('pages/advert.html', form=form, advert=advert,
+                                edit=edit, website_list=website_list,
+                                website_selected=website_selected)
+
+
     return checksum
 
 @app.route('/register', methods=['GET', 'POST'])

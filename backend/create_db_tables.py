@@ -19,7 +19,6 @@ def create_database(config):
         cursor = connexion.cursor()
         cursor.execute('CREATE DATABASE {};'.format(config.get('MySQL', 'db')))
 
-
 def create_images_table(connexion):
     with connexion:
         cursor = connexion.cursor()
@@ -32,15 +31,24 @@ def create_images_table(connexion):
                         file_type VARCHAR(50),
                         original_url VARCHAR(500),
                         authorized VARCHAR(50),
-                        descreption VARCHAR(500))""")
+                        description VARCHAR(500),
+                        rate INT(6),
+                        value FLOAT,
+                        banner_size VARCHAR(50),
+                        product VARCHAR(100),
+                        class_customer VARCHAR(100),
+                        category VARCHAR(100),
+                        sector VARCHAR(100),
+                        image_id VARCHAR(100))""")
 
 
-def create_sites_table(connexion):
+def create_websites_table(connexion):
     with connexion:
         cursor = connexion.cursor()
         cursor.execute("""CREATE TABLE websites (
                         id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                        domain_name VARCHAR(256))""")
+                        domain_name VARCHAR(256),
+                        cost float)""")
 
 
 def create_adtracking_table(connexion):
@@ -96,7 +104,7 @@ if __name__ == '__main__':
         pass
     conn = db_connection(config)
     create_images_table(conn)
-    create_sites_table(conn)
+    create_websites_table(conn)
     insert_existing_websites(conn)
     create_adtracking_table(conn)
     create_users_table(conn)
