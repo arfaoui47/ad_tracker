@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request, flash, session, url_for, redirect
+from flask import Flask, render_template, request, flash, session, url_for, \
+     redirect, jsonify
 from flaskext.mysql import MySQL
 from forms import *
 from models import db, User, Advert, Adtracking, Website
+import flask_whooshalchemy as wa
 
 
 app = Flask(__name__)
@@ -9,6 +11,15 @@ mysql = MySQL()
 app.config.from_object('config')
 db.init_app(app)
 mysql.init_app(app)
+wa.whoosh_index(app, Advert)
+
+
+@app.route('/search')
+def autocomplete():
+    searchword = request.args.get('key', '')
+    q = Advert.query.whoosh_search(searchword).all()
+    result = [advert.description for advert in q]
+    return jsonify(q=result)
 
 
 @app.route('/', methods=['GET', 'POST'])

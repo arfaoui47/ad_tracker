@@ -1,5 +1,5 @@
 from flask_wtf import Form
-from wtforms import TextField, TextAreaField, SubmitField, validators, ValidationError, PasswordField
+from wtforms import TextField, TextAreaField, FloatField, SubmitField, validators, ValidationError, PasswordField
 from models import User, Advert
 
 
@@ -67,7 +67,7 @@ class ForgotForm(Form):
 
 class AdvertForm(Form):
     """manage advert """
-    description = TextField("Description", [validators.optional()])
+    description = TextAreaField("Description", [validators.optional()])
     rate = TextField("rate", [validators.optional()])
     value = TextField("value", [validators.optional()])
     product = TextField("product", [validators.Optional()])
@@ -96,7 +96,7 @@ class WebsiteForm(Form):
     """manage website"""
     domain_name = TextField("Domain name",
         [validators.Required("Please enter domain name.")])
-    cost = TextField("cost", [validators.optional()])
+    cost = FloatField("cost", [validators.optional()])
     submit = SubmitField("Save advert meta data")
 
     def __init__(self, *args, **kwargs):
@@ -104,20 +104,6 @@ class WebsiteForm(Form):
 
     def validate(self):
         if not Form.validate(self):
-            return False
-        else:
-            return True
-
-class UpdateCostForm(Form):
-    cost = TextField("cost", [validators.optional()])
-    submit = SubmitField("Update")
-
-    def __init__(self, *args, **kwargs):
-        Form.__init__(self, *args, **kwargs)
-
-    def validate(self):
-        if not Form.validate(self):
-            print 'zezez'
             return False
         else:
             return True
