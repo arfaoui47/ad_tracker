@@ -6,6 +6,7 @@ from random import randint
 from collections import deque
 from configparser import ConfigParser
 from create_db_tables import db_connection, find_all_websites
+import os
 
 
 def r_iframe_lookup(driver, li, imgs):
@@ -113,9 +114,11 @@ def find_static_files(url):
     return final_gifs
 
 
-if __name__ == '__main__':
+def crawl():
+    path = os.path.abspath(__file__)
+    dir_path = os.path.dirname(path)
     config = ConfigParser()
-    config.read('conf.ini')
+    config.read(os.path.join(dir_path, 'conf.ini'))
     conn = db_connection(config)
     url_list = find_all_websites(conn)
 
@@ -127,3 +130,7 @@ if __name__ == '__main__':
             save_new_gifs(gifs_url, url)
 
         time.sleep(randint(1200, 1800))
+
+
+if __name__ == '__main__':
+    crawl()
