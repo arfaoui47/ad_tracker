@@ -62,7 +62,7 @@ def tor_driver():
 
 
 if __name__ == '__main__':
-    driver = tor_driver()
+    driver = tor_driver()[0]
     driver.get("http://www.ipligence.com/geolocation")
-    driver = tor_driver()
+    driver = tor_driver()[0]
     driver.get("https://check.torproject.org/")

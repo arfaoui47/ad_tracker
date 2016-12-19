@@ -166,7 +166,7 @@ def register():
             db.session.add(newuser)
             db.session.commit()
             session['email'] = newuser.email
-            session['name'] = form.firstname
+            session['name'] = form.firstname.data
             return redirect(url_for('home'))
 
     elif request.method == 'GET':
