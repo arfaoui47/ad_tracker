@@ -1,6 +1,8 @@
 from flask.ext.sqlalchemy import SQLAlchemy
 from werkzeug import generate_password_hash, check_password_hash
 
+
+
 db = SQLAlchemy()
 
 
@@ -27,6 +29,8 @@ class User(db.Model):
 
 class Advert(db.Model):
     __tablename__ = 'images'
+    __searchable__ = ['description']
+    
     id = db.Column(db.Integer, primary_key=True)
     checksum = db.Column(db.String(256))
     date_creation = db.Column(db.DateTime(100))

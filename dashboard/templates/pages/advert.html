@@ -156,6 +156,17 @@
 </table>
 
 <input type="submit" value="Submit" class="btn btn-primary">
-</form>
+  
+
+<script type="text/javascript">
+    $('#description').autocomplete({
+    source: function (request, response) {
+        $.getJSON("/search?key=" + document.getElementById('description').value, function (data) {
+            response(data.q);
+        });
+    },
+    minLength: 1
+})
+</script>
   {% endif %}
 {% endblock %}

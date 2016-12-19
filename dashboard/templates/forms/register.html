@@ -2,19 +2,19 @@
 {% block title %}Register{% endblock %}
 {% block content %}
   {% for message in form.firstname.errors %}
-    <div class="flash">{{ message }}</div>
+    <div class="alert alert-danger">{{ message }}</div>
   {% endfor %}
    
   {% for message in form.lastname.errors %}
-    <div class="flash">{{ message }}</div>
+    <div class="alert alert-danger">{{ message }}</div>
   {% endfor %}
    
   {% for message in form.email.errors %}
-    <div class="flash">{{ message }}</div>
+    <div class="alert alert-danger">{{ message }}</div>
   {% endfor %}
    
   {% for message in form.password.errors %}
-    <div class="flash">{{ message }}</div>
+    <div class="alert alert-danger">{{ message }}</div>
   {% endfor %}
   <form method="post" class="form" action="{{ url_for('register') }}">
   {{ form.hidden_tag() }}
