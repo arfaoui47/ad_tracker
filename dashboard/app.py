@@ -14,14 +14,6 @@ mysql.init_app(app)
 wa.whoosh_index(app, Advert)
 
 
-@app.route('/search')
-def autocomplete():
-    searchword = request.args.get('key', '')
-    q = Advert.query.whoosh_search(searchword).all()
-    result = [advert.description for advert in q]
-    return jsonify(q=result)
-
-
 @app.route('/', methods=['GET', 'POST'])
 def home():   
     if 'email' not in session:
@@ -119,15 +111,18 @@ def manage_advert(checksum):
             return render_template('pages/advert.html', form=form, advert=advert)
         else:
             advert.description = form.description.data if form.description.data else advert.description
+            advert.image_id = str(advert.date) + str(advert.description)
+            
+            print advert.rate
             if not form.rate.data:
                 if not advert.rate:
                     advert.rate = 0
             else:
                 advert.rate = form.rate.data
-
+            
             if not form.value.data:
                 if not advert.rate:
-                    advert.rate = 0
+                    advert.value = 0
             else:
                 advert.value = form.value.data
 
@@ -140,7 +135,11 @@ def manage_advert(checksum):
             return redirect(url_for('manage_advert', checksum=checksum))
 
     elif request.method == 'GET':
-        
+        advert_website = Website.query.filter_by(domain_name=advert.website).first()
+        if advert_website and advert.rate == None:
+            advert.rate = advert_website.cost
+            advert.value = advert_website.cost /30.
+            db.session.commit()
         
         if delete == 'true':
             Advert.query.filter_by(checksum=checksum).delete()
@@ -218,12 +217,39 @@ def forgot():
     return render_template('forms/forgot.html', form=form)
 
 
-@app.route('/test')
-def test():
-    cur = mysql.connect().cursor()
-    cur.execute('''SELECT * FROM images''')
-    rv = cur.fetchall()
-    return render_template('pages/placeholder.home.html.html', result=rv)
+@app.route('/search')
+def autocomplete():
+    desc_searchword = request.args.get('key', '')
+    advert_q = request.args.get('desc', '')
+    class_customer_q = request.args.get('product', '')
+
+    desc_q = Advert.query.whoosh_search(desc_searchword).all()
+    description_list = [advert.description for advert in desc_q]
+    product = ''
+    class_customer = ''
+    category = ''
+    sector =''
+    if advert_q:
+        advert = Advert.query.filter_by(description=str(advert_q)).first()
+        product = advert.product if advert.product else ''
+        class_customer = advert.class_customer if advert.class_customer else ''
+        category = advert.category if advert.category else ''
+        sector = advert.sector if advert.sector else ''
+    
+    adverts = Advert.query.all()
+    product_list = [advert.product for advert in adverts if advert.product is not None]
+    class_customer_list = [advert.class_customer for advert in adverts if advert.class_customer is not None]
+    category_list = [advert.category for advert in adverts if advert.category is not None]
+    sector_list = [advert.sector for advert in adverts if advert.sector is not None]
+    return jsonify(description=description_list,
+                   product_list=product_list,
+                   product=product,
+                   class_customer=class_customer,
+                   class_customer_list= class_customer_list,
+                   category=category,
+                   category_list=category_list,
+                   sector=sector,
+                   sector_list=sector_list)
 
 
 @app.errorhandler(500)

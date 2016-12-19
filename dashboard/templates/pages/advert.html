@@ -129,7 +129,7 @@
 </thead>
 <tbody>
         <tr>
-            <td class="col-sm-3"> {{ form.description(class =  'col-sm-12', placeholder = advert.description) }} </td>
+            <td class="col-sm-3" id='description_td'> {{ form.description(class =  'col-sm-12', placeholder = advert.description) }} </td>
         </tr>
 </tbody>
 </table>
@@ -162,11 +162,59 @@
     $('#description').autocomplete({
     source: function (request, response) {
         $.getJSON("/search?key=" + document.getElementById('description').value, function (data) {
-            response(data.q);
+            response(data.description);
         });
     },
     minLength: 1
-})
+}).on('autocompleteselect', function(e, ui) {
+        $('#product').text(function(request, response){
+             $.getJSON('/search?desc=' + ui.item.value, function(data){
+                    $('#product').val(data.product);
+                    $('#class_customer').val(data.class_customer)
+                    $('#category').val(data.category)
+                    $('#sector').val(data.sector)
+                    });
+                });
+        });
+    
+        $('#product').autocomplete({
+            source: function(request, response) {
+                $.getJSON('/search', function(data){
+                    response(data.product_list)
+                });
+            },
+            minLength: 0
+        });
+
+        $('#class_customer').autocomplete({
+            source: function(request, response) {
+                $.getJSON('/search', function(data){
+                    response(data.class_customer_list)
+                });
+            },
+            minLength: 0
+        });
+
+
+        $('#category').autocomplete({
+            source: function(request, response) {
+                $.getJSON('/search', function(data){
+                    response(data.category_list)
+                });
+            },
+            minLength: 0
+        });
+
+        $('#sector').autocomplete({
+            source: function(request, response) {
+                $.getJSON('/search', function(data){
+                    response(data.sector_list)
+                });
+            },
+            minLength: 0
+        });
+
+
 </script>
   {% endif %}
 {% endblock %}
