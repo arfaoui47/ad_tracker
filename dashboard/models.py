@@ -1,6 +1,8 @@
 from flask.ext.sqlalchemy import SQLAlchemy
 from werkzeug import generate_password_hash, check_password_hash
 
+
+
 db = SQLAlchemy()
 
 
@@ -23,3 +25,48 @@ class User(db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.pwdhash, password)
+
+
+class Advert(db.Model):
+    __tablename__ = 'images'
+    __searchable__ = ['description']
+    
+    id = db.Column(db.Integer, primary_key=True)
+    checksum = db.Column(db.String(256))
+    date_creation = db.Column(db.DateTime(100))
+    year = db.Column(db.Integer)
+    month = db.Column(db.String)
+    date = db.Column(db.String)
+    url = db.Column(db.String(250))
+    website = db.Column(db.String(100))
+    file_type = db.Column(db.String(50))
+    original_url = db.Column(db.String(500))
+    authorized = db.Column(db.String(50))
+    description = db.Column(db.String(500))
+    rate = db.Column(db.Integer)
+    value = db.Column(db.Float, onupdate=rate/30)
+    banner_size = db.Column(db.String(50))
+    product = db.Column(db.String(100))
+    class_customer = db.Column(db.String(100))
+    category = db.Column(db.String(100))
+    sector = db.Column(db.String(100))
+    image_id = db.Column(db.String(100))
+    
+
+class Adtracking(db.Model):
+    __tablename__ = 'adtracking'
+    id = db.Column(db.Integer, primary_key=True)
+    checksum = db.Column(db.String(256))
+    date_creation = db.Column(db.DateTime(100))
+    location = db.Column(db.String(256))
+
+
+class Website(db.Model):
+    __tablename__ = 'websites'
+    id = db.Column(db.Integer, primary_key=True)
+    domain_name = db.Column(db.String(256))
+    cost = db.Column(db.Float)
+
+    def __init__(self, domain_name, cost=0):
+        self.domain_name = domain_name.lower()
+        self.cost = cost

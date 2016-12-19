@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request, flash, session, url_for, redirect
+from flask import Flask, render_template, request, flash, session, url_for, \
+     redirect, jsonify
 from flaskext.mysql import MySQL
 from forms import *
-from models import db, User
+from models import db, User, Advert, Adtracking, Website
+import flask_whooshalchemy as wa
 
 
 app = Flask(__name__)
@@ -9,6 +11,7 @@ mysql = MySQL()
 app.config.from_object('config')
 db.init_app(app)
 mysql.init_app(app)
+wa.whoosh_index(app, Advert)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -53,13 +56,101 @@ def home():
                                sort_by_website=sort_by_website)
 
 
-@app.route('/manage')
-def about():
-    return render_template('pages/placeholder.manage.html')
+@app.route('/websites', methods=['GET', 'POST'])
+def manage_websites():
+    form = WebsiteForm()
+    websites = Website.query.filter_by()
+    delete = request.args.get('delete', 'false')
+    edit = request.args.get('edit', 'false')
+
+    if 'email' not in session:
+        return render_template('pages/placeholder.notsignin.html')
+    else:
+        if request.method == 'POST':
+            if edit != 'false':
+                website = Website.query.filter_by(domain_name=edit).first()
+                website.cost = form.cost.data if form.cost.data else 0
+                print website.domain_name
+                print form.cost.data
+                db.session.commit()
+                return redirect(url_for('manage_websites'))
+
+            if not form.validate():
+                return render_template('pages/placeholder.websites.html',
+                            websites=websites, form=form)
+            else:
+                cost = form.cost.data if form.cost.data else 0
+                new_website = Website(form.domain_name.data, cost)
+                db.session.add(new_website)
+                db.session.commit()
+            return redirect(url_for('manage_websites', edit=edit))
+        
+        elif request.method == 'GET':
+            if delete != 'false':
+                Website.query.filter_by(domain_name=delete).delete()
+                db.session.commit()
+            return render_template('pages/placeholder.websites.html',
+                                websites=websites, form=form, edit=edit)
 
 
-@app.route('/advert/<string:checksum>')
+@app.route('/advert/<string:checksum>', methods=['GET', 'POST'])
 def manage_advert(checksum):
+    form = AdvertForm()
+
+    advert = Advert.query.filter_by(checksum=checksum).first()
+    adtracking = Adtracking.query.filter_by(checksum=checksum)
+
+    edit = request.args.get('edit', 'false')
+    delete = request.args.get('delete', 'false')
+    website_selected = request.args.get('website', advert.website)
+
+    website_list = [ad.location for ad in adtracking]
+
+    if request.method == 'POST':
+        if form.validate() == False:
+            return render_template('pages/advert.html', form=form, advert=advert)
+        else:
+            advert.description = form.description.data if form.description.data else advert.description
+            advert.image_id = str(advert.date) + str(advert.description)
+            
+            print advert.rate
+            if not form.rate.data:
+                if not advert.rate:
+                    advert.rate = 0
+            else:
+                advert.rate = form.rate.data
+            
+            if not form.value.data:
+                if not advert.rate:
+                    advert.value = 0
+            else:
+                advert.value = form.value.data
+
+            advert.product = form.product.data if form.product.data else advert.product
+            advert.class_customer = form.class_customer.data if form.class_customer.data else advert.class_customer
+            advert.category = form.category.data if form.category.data else advert.category
+            advert.sector = form.sector.data if form.sector.data else advert.sector
+            advert.image_id = form.image_id.data
+            db.session.commit()
+            return redirect(url_for('manage_advert', checksum=checksum))
+
+    elif request.method == 'GET':
+        advert_website = Website.query.filter_by(domain_name=advert.website).first()
+        if advert_website and advert.rate == None:
+            advert.rate = advert_website.cost
+            advert.value = advert_website.cost /30.
+            db.session.commit()
+        
+        if delete == 'true':
+            Advert.query.filter_by(checksum=checksum).delete()
+            db.session.commit()
+            return redirect(url_for('home'))
+        
+        return render_template('pages/advert.html', form=form, advert=advert,
+                                edit=edit, website_list=website_list,
+                                website_selected=website_selected)
+
+
     return checksum
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -126,12 +217,39 @@ def forgot():
     return render_template('forms/forgot.html', form=form)
 
 
-@app.route('/test')
-def test():
-    cur = mysql.connect().cursor()
-    cur.execute('''SELECT * FROM images''')
-    rv = cur.fetchall()
-    return render_template('pages/placeholder.home.html.html', result=rv)
+@app.route('/search')
+def autocomplete():
+    desc_searchword = request.args.get('key', '')
+    advert_q = request.args.get('desc', '')
+    class_customer_q = request.args.get('product', '')
+
+    desc_q = Advert.query.whoosh_search(desc_searchword).all()
+    description_list = [advert.description for advert in desc_q]
+    product = ''
+    class_customer = ''
+    category = ''
+    sector =''
+    if advert_q:
+        advert = Advert.query.filter_by(description=str(advert_q)).first()
+        product = advert.product if advert.product else ''
+        class_customer = advert.class_customer if advert.class_customer else ''
+        category = advert.category if advert.category else ''
+        sector = advert.sector if advert.sector else ''
+    
+    adverts = Advert.query.all()
+    product_list = [advert.product for advert in adverts if advert.product is not None]
+    class_customer_list = [advert.class_customer for advert in adverts if advert.class_customer is not None]
+    category_list = [advert.category for advert in adverts if advert.category is not None]
+    sector_list = [advert.sector for advert in adverts if advert.sector is not None]
+    return jsonify(description=description_list,
+                   product_list=product_list,
+                   product=product,
+                   class_customer=class_customer,
+                   class_customer_list= class_customer_list,
+                   category=category,
+                   category_list=category_list,
+                   sector=sector,
+                   sector_list=sector_list)
 
 
 @app.errorhandler(500)

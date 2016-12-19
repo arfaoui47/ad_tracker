@@ -27,6 +27,35 @@ a {
   color: #FFF;
 }
 
+.ui-helper-hidden-accessible { border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px; 
+}
+.ui-autocomplete .highlight {
+	text-decoration: underline;
+	color: orange;
+}
+.fixed-height {
+	padding: 1px;
+	max-height: 200px;
+	overflow: auto;
+}
+.ui-autocomplete-category {
+	font-weight: bold;
+	padding: .2em .4em;
+	margin: .8em 0 .2em;
+	line-height: 1.5;
+}
+.ui-menu .ui-menu-item .ui-state-focus {
+  background: #ff0030;
+  border: none;
+  color: #ffffff;
+}
 /* Main elements end */
 
 

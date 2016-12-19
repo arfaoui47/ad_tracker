@@ -136,11 +136,19 @@ def data_insert(md5_hash, data, website, url_bucket, connexion):
             original_url = str(data['original_url'])
         else:
             original_url = 'data:image'
-        cursor.execute("INSERT INTO images(checksum, date_creation, url,"
-                       " website, file_type, original_url, authorized) VALUES"
-                       " ({},{},{},{},{},{},{})".format(
+        date_creation = time.strftime('%Y-%m-%d %H:%M:%S')
+        year = time.strftime('%Y')
+        month = time.strftime('%d/%m/%Y')
+        date = time.strftime('%Y%m%d')
+        cursor.execute("INSERT INTO images(checksum, date_creation, year,"
+                       " month, date, url, website, file_type, original_url,"
+                       " authorized) VALUES ({},{},{},{},{},{},{},{},{},{})"
+                       .format(
                            repr(md5_hash),
-                           repr(time.strftime('%Y-%m-%d %H:%M:%S')),
+                           repr(date_creation),
+                           repr(year),
+                           repr(month),
+                           repr(date),
                            repr(url_bucket), repr(website),
                            repr(data.get('extension', 0)),
                            repr(original_url),
@@ -197,4 +205,4 @@ if __name__ == '__main__':
             'https://tpc.googlesyndication.com/simgad/14401369669909578556',
             'https://tpc.googlesyndication.com/simgad/11150122043232262085',
             'https://tpc.googlesyndication.com/simgad/16091105791262164897']
-    save_new_gifs(urls, 'test.com')
+    save_new_gifs(urls, 'test4.com')

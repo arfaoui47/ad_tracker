@@ -13,10 +13,10 @@ SECRET_KEY = 'my precious'
 MYSQL_DATABASE_USER = 'root'
 MYSQL_DATABASE_HOST = 'localhost'
 MYSQL_DATABASE_PASSWORD = 'arfa47'
-MYSQL_DATABASE_DB = 'test1'
+MYSQL_DATABASE_DB = 'test3'
 # # Connect to the database
 # SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'database.db')
 
-SQLALCHEMY_DATABASE_URI = 'mysql://root:arfa47@localhost/test2'
-from app import app
-from models import db
+SQLALCHEMY_DATABASE_URI = 'mysql://root:arfa47@localhost/test3'
+SQLALCHEMY_TRACK_MODIFICATIONS = True
+WHOOSH_BASE = 'whoosh'

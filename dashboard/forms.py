@@ -1,6 +1,6 @@
 from flask_wtf import Form
-from wtforms import TextField, TextAreaField, SubmitField, validators, ValidationError, PasswordField
-from models import User
+from wtforms import TextField, TextAreaField, FloatField, SubmitField, validators, ValidationError, PasswordField
+from models import User, Advert
 
 
 class SignupForm(Form):
@@ -23,11 +23,10 @@ class SignupForm(Form):
 
     def validate(self):
         if not Form.validate(self):
-            print 's'
             return False
 
         user = User.query.filter_by(email=self.email.data.lower()).first()
-        print user
+
         if user:
             self.email.errors.append("That email is already taken")
             return False
@@ -64,3 +63,47 @@ class ForgotForm(Form):
     email = TextField(
         'Email', validators=[validators.Required()]
     )
+
+
+class AdvertForm(Form):
+    """manage advert """
+    description = TextAreaField("Description", [validators.optional()])
+    rate = TextField("rate", [validators.optional()])
+    value = TextField("value", [validators.optional()])
+    product = TextField("product", [validators.Optional()])
+    class_customer = TextField("class_customer", [validators.optional()])
+    category = TextField("category", [validators.optional()])
+    sector = TextField("sector", [validators.optional()])
+    image_id = TextField("image_id", [validators.optional()])
+    submit = SubmitField("Save advert meta data")
+
+    def __init__(self, *args, **kwargs):
+        Form.__init__(self, *args, **kwargs)
+
+    def validate(self):
+        if not Form.validate(self):
+            return False
+        else:
+            return True
+        # advert = Advert.query.filter_by(checksum=checksum).first()
+        # if advert :
+        #     return True
+        # else:
+        #     return False
+
+
+class WebsiteForm(Form):
+    """manage website"""
+    domain_name = TextField("Domain name",
+        [validators.Required("Please enter domain name.")])
+    cost = FloatField("cost", [validators.optional()])
+    submit = SubmitField("Save advert meta data")
+
+    def __init__(self, *args, **kwargs):
+        Form.__init__(self, *args, **kwargs)
+
+    def validate(self):
+        if not Form.validate(self):
+            return False
+        else:
+            return True

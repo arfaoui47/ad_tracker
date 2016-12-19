@@ -1,0 +1,58 @@
+{% extends 'layouts/main.html' %}
+{% block title %}About{% endblock %}
+{% block content %}
+
+
+<div class="page-header">
+  <h1>Manage websites</h1>
+</div>
+
+{% for message in form.domain_name.errors %}
+    <div class="alert alert-danger">{{ message }}</div>
+  {% endfor %}
+  {% for message in form.cost.errors %}
+    <div class="alert alert-danger">{{ message }}</div>
+  {% endfor %}
+<div class="page-header">
+  <h1>Manage websites</h1>
+</div>
+<div class="container">   
+<table class="table table-bordered table-hover">
+ <thead>
+    <tr class="info">
+        <th class="col-sm-7"> Web Address </th>
+        <th class="col-sm-5"> Cost </th>
+    </tr>
+</thead>
+<tbody>
+	<form method="post" class="form" action="#">
+  	{{ form.hidden_tag()}}
+  	<tr>
+  		<td class="col-sm-7"> {{form.domain_name(class = 'col-md-12', placeholder = 'New Website')}} </td>
+        <td class="col-sm-3"> {{form.cost(class = 'col-md-12', placeholder= 'Cost')}} </td>
+		<td class="col-sm-2"> <a href="{{url_for('manage_websites')}}">{{form.submit(value ='Add Website')}}</a></td>
+  	</tr>
+  	</form>
+  	<form method="post" class="form" action="#">
+	{% for website in websites %}
+        <tr>
+            <td class="col-sm-7"> {{website.domain_name}} </td>
+            
+            {% if edit ==  website.domain_name%}
+			<td class="col-sm-3">{{ form.cost(class = 'col-md-12') }}</td>
+            <td class="col-sm-2"> <a href="{{url_for('manage_websites')}}">{{form.submit(value ='Update')}}</a></td>
+			{%else%}
+            <td class="col-sm-3"> {{website.cost}}</td>
+            <td class="col-sm-2"> <a href="{{url_for('manage_websites', edit=website.domain_name)}}"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Edit</a></td>
+			{%endif%} 
+            <td class="col-sm-2"> <a href="{{url_for('manage_websites', delete=website.domain_name)}}"><i class="fa fa-trash-o" aria-hidden="true"></i></a></td>
+        </tr>
+    {% endfor %}
+	</form>
+
+</tbody>
+</table>
+</div>
+
+
+{% endblock %}

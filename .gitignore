@@ -7,3 +7,4 @@ venv/
 *.log
 .idea/
 backend/atest.py
+dashboard/whoosh
