@@ -55,7 +55,7 @@ def find_static_files(url):
                      'cat.fr.eu.criteo', 'doubleclick', 'lg.php?'
                      'cat.nl.eu.criteo.com/delivery', 'adstore_icon_on.png',
                      'xblasterads', 'tags.bluekai', 'dpm.demdex.net/ibs:dpid',
-                     'EMPTY_IMG.png']
+                     'EMPTY_IMG.png', 'production.selectmedia.asia']
 
     ##########################################################################
     #                           ad file in source                            #

@@ -56,6 +56,61 @@ def home():
                                sort_by_website=sort_by_website)
 
 
+@app.route('/trackedadverts', methods=['GET', 'POST'])
+def tracked_adverts():   
+    if 'email' not in session:
+        return render_template('pages/placeholder.notsignin.html')
+    else:
+        conn = mysql.connect() 
+        cur = conn.cursor()
+        cur.execute('''SELECT * FROM images WHERE authorized="True"''')
+        rv = cur.fetchall()
+        col_key_mapper = {'date': 2,
+                          'site': 4}
+        sort = request.args.get('sort', 'date')
+        reverse = (request.args.get('direction', 'asc') == 'desc')
+
+        direction = 'asc' if reverse else 'desc'
+
+        sort_by_date = url_for('home', sort='date', direction=direction)
+        sort_by_website = url_for('home', sort='site', direction=direction)
+
+        result = sorted(rv, key=lambda x: x[col_key_mapper[sort]],
+                        reverse=reverse)
+
+        return render_template('pages/placeholder.tracked.html', result=result,
+                               sort_by_date=sort_by_date,
+                               sort_by_website=sort_by_website)
+
+
+
+@app.route('/untrackedadverts', methods=['GET', 'POST'])
+def untracked_adverts():   
+    if 'email' not in session:
+        return render_template('pages/placeholder.notsignin.html')
+    else:
+        conn = mysql.connect() 
+        cur = conn.cursor()
+        cur.execute('''SELECT * FROM images WHERE authorized="True"''')
+        rv = cur.fetchall()
+        col_key_mapper = {'date': 2,
+                          'site': 4}
+        sort = request.args.get('sort', 'date')
+        reverse = (request.args.get('direction', 'asc') == 'desc')
+
+        direction = 'asc' if reverse else 'desc'
+
+        sort_by_date = url_for('home', sort='date', direction=direction)
+        sort_by_website = url_for('home', sort='site', direction=direction)
+
+        result = sorted(rv, key=lambda x: x[col_key_mapper[sort]],
+                        reverse=reverse)
+
+        return render_template('pages/placeholder.untracked.html', result=result,
+                               sort_by_date=sort_by_date,
+                               sort_by_website=sort_by_website)
+
+
 @app.route('/websites', methods=['GET', 'POST'])
 def manage_websites():
     form = WebsiteForm()
@@ -138,7 +193,8 @@ def manage_advert(checksum):
         advert_website = Website.query.filter_by(domain_name=advert.website).first()
         if advert_website and advert.rate == None:
             advert.rate = advert_website.cost
-            advert.value = advert_website.cost /30.
+            if advert_website.cost:
+                advert.value = advert_website.cost /30.
             db.session.commit()
         
         if delete == 'true':

@@ -1,29 +1,29 @@
 {% extends 'layouts/main.html' %}
 {% block title %}Home{% endblock %}
 {% block content %}
-
+<h3>New Advertsr</h3>
 <div>   
 <table class="table table-bordered table-hover">
  <thead>
     <tr>
-        <th class="col-sm-2"><a href="{{ sort_by_date }}"> Date Creation <i class="fa fa-sort" aria-hidden="true"></i></a> </th>
+        <th class="col-sm-2"><a href="{{ sort_by_date }}"> Date Found <i class="fa fa-sort" aria-hidden="true"></i></a> </th>
         <th class="col-sm-5"> Image preview </th>
         <th class="col-sm-1"> Original link </th>
         <th class="col-sm-1"> File type </th>
-        <th class="col-sm-1"> Track </th>
+        <th class="col-sm-1"> Authorize for tracking </th>
         <th class="col-sm-1"> Confirm </th>
     </tr>
 </thead>
 <tbody>
     {% for item in result%}
-        <tr style="min-height:200px;">
+        <tr">
             <td class="col-sm-2"> {{ item[2] }} </td>
             <td class="col-sm-5"> 
                 <a href="{{ item[6] }}">
                 <img src="{{ item[6] }}" class="img-thumbnail" alt="image not found" title=""></a>
             </td>
-            <td class="col-sm-1"><a href="{{ item[6] }}" class="btn btn-default" role="button">Link</a> </td>
-            <td class="col-sm-1"> {{ item[8] }} </td>
+            <td class="col-sm-1"><a href="{{ item[10] }}" class="btn btn-default" role="button">Link</a> </td>
+            <td class="col-sm-1"> {{ item[9] }} </td>
             <form method="post">
             <td class="col-sm-1"> 
                 <input type="radio" name="options"  value="True {{item[1]}}"> Yes </input><br>
