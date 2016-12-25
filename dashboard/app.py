@@ -91,7 +91,7 @@ def untracked_adverts():
     else:
         conn = mysql.connect() 
         cur = conn.cursor()
-        cur.execute('''SELECT * FROM images WHERE authorized="True"''')
+        cur.execute('''SELECT * FROM images WHERE authorized="False"''')
         rv = cur.fetchall()
         col_key_mapper = {'date': 2,
                           'site': 4}
