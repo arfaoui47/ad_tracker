@@ -21,7 +21,7 @@ MYSQL_DATABASE_DB = config.get('MySQL', 'db')
 
 SQLALCHEMY_DATABASE_URI = 'mysql://{}:{}@{}/{}'.format(config.get('MySQL', 'user'),
 													   config.get('MySQL', 'password'),
-													   config.get('MySQL', 'host')
+													   config.get('MySQL', 'host'),
 													   config.get('MySQL', 'db'))
 SQLALCHEMY_TRACK_MODIFICATIONS = True
 WHOOSH_BASE = 'whoosh'
