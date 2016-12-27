@@ -10,7 +10,7 @@
         <th class="col-sm-5"> Image preview </th>
         <th class="col-sm-1"> Original link </th>
         <th class="col-sm-1"> File type </th>
-        {% if tracked=='NULL' %}
+        {% if tracked!='True' and tracked!='False' %}
         <th class="col-sm-1"> Authorize for tracking </th>
         <th class="col-sm-1"> Confirm </th>
         {% endif %}
@@ -26,11 +26,11 @@
             </td>
             <td class="col-sm-1"><a href="{{ item.original_url }}" class="btn btn-default" role="button">Link</a> </td>
             <td class="col-sm-1"> {{ item.file_type }} </td>
-            {% if tracked == 'NULL' %}
+            {% if tracked!='True' and tracked!='False' %}
             <form method="post">
             <td class="col-sm-1"> 
-                <input type="radio" name="options"  value="True {{item[1]}}"> Yes </input><br>
-                <input type="radio" name="options"  value="False {{item[1]}}"> No </input>
+                <input type="radio" name="options"  value="True {{item.checksum}}"> Yes </input><br>
+                <input type="radio" name="options"  value="False {{item.checksum}}"> No </input>
              </td>
             <td class="col-sm-1"><input type="submit" value="save" class="btn btn-primary"> </td>
             </form>

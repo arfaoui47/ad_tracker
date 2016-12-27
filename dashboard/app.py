@@ -25,14 +25,12 @@ def home():
 
         if request.method == 'POST':
             options = request.form['options']
+
             track_value = str(options).split()[0]
             checksum = str(options).split()[1]
             advert = Advert.query.filter_by(checksum=checksum)
             advert.authorized = track_value
-            cur.execute(''' UPDATE images SET authorized={} WHERE 
-                        checksum={}'''.format(
-                            repr(track_value), repr(checksum)))
-            conn.commit()
+            db.session.commit()
 
             if track_value == 'True':
                 return redirect(url_for('manage_advert', checksum=checksum))
@@ -57,8 +55,6 @@ def manage_websites():
             if edit != 'false':
                 website = Website.query.filter_by(domain_name=edit).first()
                 website.cost = form.cost.data if form.cost.data else 0
-                print website.domain_name
-                print form.cost.data
                 db.session.commit()
                 return redirect(url_for('manage_websites'))
 
@@ -100,7 +96,6 @@ def manage_advert(checksum):
             advert.description = form.description.data if form.description.data else advert.description
             advert.image_id = str(advert.date) + str(advert.description)
             
-            print advert.rate
             if not form.rate.data:
                 if not advert.rate:
                     advert.rate = 0
@@ -138,8 +133,6 @@ def manage_advert(checksum):
                                 edit=edit, website_list=website_list,
                                 website_selected=website_selected)
 
-
-    return checksum
 
 
 @app.route('/register', methods=['GET', 'POST'])
