@@ -106,8 +106,9 @@ def find_static_files(url):
         raise
 
     for i in gifs_urls:
-        if all(j not in i for j in not_ad_images):
-            final_gifs.add(i)
+        if isinstance(i, str):
+            if all(j not in i for j in not_ad_images):
+                final_gifs.add(i)
 
     driver.quit()
     tor_driver()[1].stop()
@@ -118,7 +119,7 @@ def crawl():
     path = os.path.abspath(__file__)
     dir_path = os.path.dirname(path)
     config = ConfigParser()
-    config.read(os.path.join(dir_path, 'conf.ini'))
+    config.read(os.path.join(dir_path, '../config.ini'))
     conn = db_connection(config)
     url_list = find_all_websites(conn)
 

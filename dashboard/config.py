@@ -1,7 +1,11 @@
-# import os
+import os
+from configparser import ConfigParser
 
-# # Grabs the folder where the script runs.
-# basedir = os.path.abspath(os.path.dirname(__file__))
+
+path = os.path.abspath(__file__)
+dir_path = os.path.dirname(path)
+config = ConfigParser()
+config.read(os.path.join(dir_path, '../config.ini'))
 
 # # Enable debug mode.
 DEBUG = True
@@ -10,13 +14,14 @@ DEBUG = True
 # # http://clsc.net/tools-old/random-string-generator.php
 SECRET_KEY = 'my precious'
 
-MYSQL_DATABASE_USER = 'root'
-MYSQL_DATABASE_HOST = 'localhost'
-MYSQL_DATABASE_PASSWORD = 'arfa47'
-MYSQL_DATABASE_DB = 'test3'
-# # Connect to the database
-# SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'database.db')
+MYSQL_DATABASE_USER = config.get('MySQL', 'user')
+MYSQL_DATABASE_HOST = config.get('MySQL', 'host')
+MYSQL_DATABASE_PASSWORD = config.get('MySQL', 'password')
+MYSQL_DATABASE_DB = config.get('MySQL', 'db')
 
-SQLALCHEMY_DATABASE_URI = 'mysql://root:arfa47@localhost/test3'
+SQLALCHEMY_DATABASE_URI = 'mysql://{}:{}@{}/{}'.format(config.get('MySQL', 'user'),
+													   config.get('MySQL', 'password'),
+													   config.get('MySQL', 'host')
+													   config.get('MySQL', 'db'))
 SQLALCHEMY_TRACK_MODIFICATIONS = True
 WHOOSH_BASE = 'whoosh'

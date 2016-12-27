@@ -1,5 +1,6 @@
 from configparser import ConfigParser
 import MySQLdb
+import os
 
 
 def db_connection(config):
@@ -68,7 +69,9 @@ def create_adtracking_table(connexion):
 def insert_existing_websites(connexion):
     with connexion:
         cursor = connexion.cursor()
-        with open('url_list.txt', 'r') as f:
+        path = os.path.abspath(__file__)
+        dir_path = os.path.dirname(path)
+        with open(os.path.join(dir_path, 'url_list.txt'), 'r') as f:
             url_list = f.read().splitlines()
             for url in url_list:
                 try:
@@ -100,8 +103,10 @@ def find_all_websites(connexion):
 
 
 if __name__ == '__main__':
+    path = os.path.abspath(__file__)
+    dir_path = os.path.dirname(path)
     config = ConfigParser()
-    config.read('conf.ini')
+    config.read(os.path.join(dir_path, '../config.ini'))
     try:
         create_database(config)
     except:
