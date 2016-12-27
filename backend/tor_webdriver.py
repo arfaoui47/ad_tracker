@@ -49,7 +49,7 @@ class MockDisplay():
 def tor_driver():
     User_agent = random.choice(uas)
     resolution = random.choice(sizes)
-    display = Display(visible=1, size=resolution)
+    display = Display(visible=0, size=resolution)
     display.start()
     profile = webdriver.FirefoxProfile()
     profile.set_preference("general.useragent.override", User_agent)

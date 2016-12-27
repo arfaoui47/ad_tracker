@@ -9,8 +9,10 @@ from upload_to_S3 import upload_to_S3
 import os
 
 
+path = os.path.abspath(__file__)
+dir_path = os.path.dirname(path)
 config = ConfigParser()
-config.read('conf.ini')
+config.read(os.path.join(dir_path, '../config.ini'))
 
 
 def file_name_generator(size=6, chars=string.ascii_uppercase + string.digits):
