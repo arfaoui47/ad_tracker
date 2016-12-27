@@ -7,10 +7,8 @@ import flask_whooshalchemy as wa
 
 
 app = Flask(__name__)
-mysql = MySQL()
 app.config.from_object('config')
 db.init_app(app)
-mysql.init_app(app)
 wa.whoosh_index(app, Advert)
 
 
@@ -19,28 +17,18 @@ def home():
     if 'email' not in session:
         return render_template('pages/placeholder.notsignin.html')
     else:
-        conn = mysql.connect() 
-        cur = conn.cursor()
-        cur.execute('''SELECT * FROM images WHERE authorized="NULL"''')
-        rv = cur.fetchall()
-        col_key_mapper = {'date': 2,
-                          'site': 4}
-        sort = request.args.get('sort', 'date')
+        tracked = request.args.get('tracked_value', 'NULL')
+        result = Advert.query.filter_by(authorized=tracked)
         reverse = (request.args.get('direction', 'asc') == 'desc')
-
         direction = 'asc' if reverse else 'desc'
-
-        sort_by_date = url_for('home', sort='date', direction=direction)
-        sort_by_website = url_for('home', sort='site', direction=direction)
-
-        result = sorted(rv, key=lambda x: x[col_key_mapper[sort]],
-                        reverse=reverse)
+        result = sorted(result, reverse=reverse)
 
         if request.method == 'POST':
             options = request.form['options']
             track_value = str(options).split()[0]
             checksum = str(options).split()[1]
-
+            advert = Advert.query.filter_by(checksum=checksum)
+            advert.authorized = track_value
             cur.execute(''' UPDATE images SET authorized={} WHERE 
                         checksum={}'''.format(
                             repr(track_value), repr(checksum)))
@@ -51,64 +39,8 @@ def home():
             else:
                 return redirect(url_for('home'))
 
-        return render_template('pages/placeholder.home.html', result=result,
-                               sort_by_date=sort_by_date,
-                               sort_by_website=sort_by_website)
-
-
-@app.route('/trackedadverts', methods=['GET', 'POST'])
-def tracked_adverts():   
-    if 'email' not in session:
-        return render_template('pages/placeholder.notsignin.html')
-    else:
-        conn = mysql.connect() 
-        cur = conn.cursor()
-        cur.execute('''SELECT * FROM images WHERE authorized="True"''')
-        rv = cur.fetchall()
-        col_key_mapper = {'date': 2,
-                          'site': 4}
-        sort = request.args.get('sort', 'date')
-        reverse = (request.args.get('direction', 'asc') == 'desc')
-
-        direction = 'asc' if reverse else 'desc'
-
-        sort_by_date = url_for('home', sort='date', direction=direction)
-        sort_by_website = url_for('home', sort='site', direction=direction)
-
-        result = sorted(rv, key=lambda x: x[col_key_mapper[sort]],
-                        reverse=reverse)
-
-        return render_template('pages/placeholder.tracked.html', result=result,
-                               sort_by_date=sort_by_date,
-                               sort_by_website=sort_by_website)
-
-
-
-@app.route('/untrackedadverts', methods=['GET', 'POST'])
-def untracked_adverts():   
-    if 'email' not in session:
-        return render_template('pages/placeholder.notsignin.html')
-    else:
-        conn = mysql.connect() 
-        cur = conn.cursor()
-        cur.execute('''SELECT * FROM images WHERE authorized="False"''')
-        rv = cur.fetchall()
-        col_key_mapper = {'date': 2,
-                          'site': 4}
-        sort = request.args.get('sort', 'date')
-        reverse = (request.args.get('direction', 'asc') == 'desc')
-
-        direction = 'asc' if reverse else 'desc'
-
-        sort_by_date = url_for('home', sort='date', direction=direction)
-        sort_by_website = url_for('home', sort='site', direction=direction)
-
-        result = sorted(rv, key=lambda x: x[col_key_mapper[sort]],
-                        reverse=reverse)
-
-        return render_template('pages/placeholder.untracked.html', result=result,
-                               sort_by_date=sort_by_date,
-                               sort_by_website=sort_by_website)
+        return render_template('pages/placeholder.adverts.html', result=result,
+                                direction=direction, tracked=tracked)
 
 
 @app.route('/websites', methods=['GET', 'POST'])
@@ -208,6 +140,7 @@ def manage_advert(checksum):
 
 
     return checksum
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():

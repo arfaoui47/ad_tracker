@@ -57,9 +57,9 @@
           <li class="dropdown">
               <a class="dropdown-toggle" data-toggle="dropdown">Manage Adverts <b class="caret"></b></a>
               <ul class="dropdown-menu">
-                <li><a href="{{ url_for('home') }}">New adverts</a></li>
-                <li><a href="{{ url_for('tracked_adverts') }}">Tracked adverts</a></li>
-                <li><a href="{{ url_for('untracked_adverts') }}">Untracked adverts</a></li>
+                <li><a href="{{ url_for('home', tracked_value='NULL') }}">New adverts</a></li>
+                <li><a href="{{ url_for('home', tracked_value='True')  }}">Tracked adverts</a></li>
+                <li><a href="{{ url_for('home', tracked_value='False') }}">Untracked adverts</a></li>
               </ul>
             </li>
             <li {% if request.endpoint == 'manage_websites' %} class="active" {% endif %}><a href="{{ url_for('manage_websites') }}">Manage Websites</a></li>

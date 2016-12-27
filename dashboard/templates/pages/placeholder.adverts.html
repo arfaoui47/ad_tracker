@@ -6,24 +6,27 @@
 <table class="table table-bordered table-hover">
  <thead>
     <tr>
-        <th class="col-sm-2"><a href="{{ sort_by_date }}"> Date Found <i class="fa fa-sort" aria-hidden="true"></i></a> </th>
+        <th class="col-sm-2"><a href="{{ url_for('home', direction=direction) }}"> Date Found <i class="fa fa-sort" aria-hidden="true"></i></a> </th>
         <th class="col-sm-5"> Image preview </th>
         <th class="col-sm-1"> Original link </th>
         <th class="col-sm-1"> File type </th>
+        {% if tracked=='NULL' %}
         <th class="col-sm-1"> Authorize for tracking </th>
         <th class="col-sm-1"> Confirm </th>
+        {% endif %}
     </tr>
 </thead>
 <tbody>
     {% for item in result%}
         <tr">
-            <td class="col-sm-2"> {{ item[2] }} </td>
+            <td class="col-sm-2"> {{ item.date_creation }} </td>
             <td class="col-sm-5"> 
-                <a href="{{ item[6] }}">
-                <img src="{{ item[6] }}" class="img-thumbnail" alt="image not found" title=""></a>
+                <a href="{{ item.url }}">
+                <img src="{{ item.url }}" class="img-thumbnail" alt="image not found" title=""></a>
             </td>
-            <td class="col-sm-1"><a href="{{ item[10] }}" class="btn btn-default" role="button">Link</a> </td>
-            <td class="col-sm-1"> {{ item[9] }} </td>
+            <td class="col-sm-1"><a href="{{ item.original_url }}" class="btn btn-default" role="button">Link</a> </td>
+            <td class="col-sm-1"> {{ item.file_type }} </td>
+            {% if tracked == 'NULL' %}
             <form method="post">
             <td class="col-sm-1"> 
                 <input type="radio" name="options"  value="True {{item[1]}}"> Yes </input><br>
@@ -31,6 +34,7 @@
              </td>
             <td class="col-sm-1"><input type="submit" value="save" class="btn btn-primary"> </td>
             </form>
+            {% endif %}
         </tr>
     {% endfor %}
 </tbody>
