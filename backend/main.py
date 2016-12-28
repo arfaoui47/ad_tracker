@@ -106,7 +106,7 @@ def find_static_files(url):
         raise
 
     for i in gifs_urls:
-        if isinstance(i, str):
+        if not isinstance(i, None):
             if all(j not in i for j in not_ad_images):
                 final_gifs.add(i)
 
