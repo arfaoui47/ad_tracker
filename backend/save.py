@@ -89,7 +89,9 @@ def image_local_save(url):
     elif url[-3:] == 'png':
         extension = 'png'
     name = file_name_generator()
-    file_location = 'local_images/' + name + '.' + extension
+    path = os.path.abspath(__file__)
+    dir_path = os.path.dirname(path)
+    file_location = os.path.join(dir_path,'local_images/' + name + '.' + extension)
     with open(file_location, 'wb') as f:
         MAX_TRY = 3
         try_num = 1
