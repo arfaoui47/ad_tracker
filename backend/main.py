@@ -52,7 +52,7 @@ def find_static_files(url):
     final_gifs = set()
     imgs = []
     not_ad_images = ['www.google.com/ads/measurement/', 'gstatic',
-                     'cat.fr.eu.criteo', 'doubleclick', 'lg.php?'
+                     'cat.fr.eu.criteo', 'doubleclick', 'lg.php?',
                      'cat.nl.eu.criteo.com/delivery', 'adstore_icon_on.png',
                      'xblasterads', 'tags.bluekai', 'dpm.demdex.net/ibs:dpid',
                      'EMPTY_IMG.png', 'production.selectmedia.asia']

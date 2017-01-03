@@ -19,17 +19,15 @@ def home():
     else:
         tracked = request.args.get('tracked_value', 'NULL')
         result = Advert.query.filter_by(authorized=tracked)
-        reverse = (request.args.get('direction', 'asc') == 'desc')
-        direction = 'asc' if reverse else 'desc'
-        result = sorted(result, reverse=reverse)
 
         if request.method == 'POST':
             options = request.form['options']
 
             track_value = str(options).split()[0]
             checksum = str(options).split()[1]
-            advert = Advert.query.filter_by(checksum=checksum)
+            advert = Advert.query.filter_by(checksum=checksum).first()
             advert.authorized = track_value
+            
             db.session.commit()
 
             if track_value == 'True':
@@ -38,7 +36,7 @@ def home():
                 return redirect(url_for('home'))
 
         return render_template('pages/placeholder.adverts.html', result=result,
-                                direction=direction, tracked=tracked)
+                                tracked=tracked)
 
 
 @app.route('/websites', methods=['GET', 'POST'])
