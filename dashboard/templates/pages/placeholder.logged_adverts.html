@@ -1,0 +1,32 @@
+{% extends 'layouts/main.html' %}
+{% block title %}Home{% endblock %}
+{% block content %}
+{%if logged_adverts.count() %}
+<h3>Logged adverts</h3>
+<div class="row">
+  <div class="span4"></div>
+  <div class="span4 panel panel-default"><img src="{{ advert.url }}" alt="file" class="center-block"></div>
+  <div class="span4"></div>
+</div>
+<div>   
+<table class="table table-bordered table-hover">
+ <thead>
+    <tr>
+        <th class="col-sm-4"> Date </th>
+        <th class="col-sm-8"> Website </th>
+    </tr>
+</thead>
+<tbody>
+    {% for item in logged_adverts%}
+        <tr">
+            <td class="col-sm-4">{{ item.date_creation }}</td>
+            <td class="col-sm-8"> {{ item.location }} </td>
+        </tr>
+    {% endfor %}
+</tbody>
+</table>
+</div>
+{%else%}
+<h3>No logging data</h3>
+{% endif %}
+{% endblock %}

@@ -13,6 +13,8 @@
         {% if tracked!='True' and tracked!='False' %}
         <th class="col-sm-1"> Authorize for tracking </th>
         <th class="col-sm-1"> Confirm </th>
+        {% elif tracked == 'True' %}
+        <th class="col-sm-1"> Logging details </th>
         {% endif %}
     </tr>
 </thead>
@@ -26,7 +28,7 @@
             </td>
             <td class="col-sm-1"><a href="{{ item.original_url }}" class="btn btn-default" role="button">Link</a> </td>
             <td class="col-sm-1"> {{ item.file_type }} </td>
-
+            
             {% if tracked!='True' and tracked!='False' %}
             <form method="post">
             <td class="col-sm-1"> 
@@ -35,6 +37,8 @@
              </td>
             <td class="col-sm-1"><input type="submit" value="save" class="btn btn-primary"> </td>
             </form>
+            {% elif tracked == 'True' %}
+            <td class="col-sm-1"><a href="{{ url_for('logged_adverts', checksum=item.checksum) }}" class="btn btn-default" role="button"> view </a></td>
             {% endif %}
         </tr>
     {% endfor %}

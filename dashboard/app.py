@@ -38,6 +38,18 @@ def home():
         return render_template('pages/placeholder.adverts.html', result=result,
                                 tracked=tracked)
 
+@app.route('/logged_adverts', methods=['GET'])
+def logged_adverts():
+    checksum = request.args.get('checksum')
+    advert = Advert.query.filter_by(checksum=checksum).first()
+    logged_adverts = Adtracking.query.filter_by(checksum=checksum)
+    if 'email' not in session:
+        return render_template('pages/placeholder.notsignin.html')
+    else:
+        return render_template('pages/placeholder.logged_adverts.html',
+            logged_adverts=logged_adverts, advert=advert)
+
+
 
 @app.route('/websites', methods=['GET', 'POST'])
 def manage_websites():
