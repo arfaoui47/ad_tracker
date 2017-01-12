@@ -38,7 +38,7 @@
             <td class="col-sm-1"><input type="submit" value="save" class="btn btn-primary"> </td>
             </form>
             {% elif tracked == 'True' %}
-            <td class="col-sm-1"><a href="{{ url_for('logged_adverts', checksum=item.checksum) }}" class="btn btn-default" role="button"> view </a></td>
+            <td class="col-sm-1"><a href="{{ url_for('manage_advert', checksum=item.checksum) }}" class="btn btn-default" role="button"> view </a></td>
             {% endif %}
         </tr>
     {% endfor %}

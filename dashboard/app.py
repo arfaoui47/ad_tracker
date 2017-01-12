@@ -38,16 +38,17 @@ def home():
         return render_template('pages/placeholder.adverts.html', result=result,
                                 tracked=tracked)
 
-@app.route('/logged_adverts', methods=['GET'])
-def logged_adverts():
-    checksum = request.args.get('checksum')
-    advert = Advert.query.filter_by(checksum=checksum).first()
-    logged_adverts = Adtracking.query.filter_by(checksum=checksum)
-    if 'email' not in session:
-        return render_template('pages/placeholder.notsignin.html')
-    else:
-        return render_template('pages/placeholder.logged_adverts.html',
-            logged_adverts=logged_adverts, advert=advert)
+
+# @app.route('/logged_adverts', methods=['GET'])
+# def logged_adverts():
+#     checksum = request.args.get('checksum')
+#     advert = Advert.query.filter_by(checksum=checksum).first()
+#     logged_adverts = Adtracking.query.filter_by(checksum=checksum)
+#     if 'email' not in session:
+#         return render_template('pages/placeholder.notsignin.html')
+#     else:
+#         return render_template('pages/placeholder.logged_adverts.html',
+#             logged_adverts=logged_adverts, advert=advert)
 
 
 
@@ -93,11 +94,15 @@ def manage_advert(checksum):
     advert = Advert.query.filter_by(checksum=checksum).first()
     adtracking = Adtracking.query.filter_by(checksum=checksum)
 
+    tracking_count = adtracking.count()
     edit = request.args.get('edit', 'false')
     delete = request.args.get('delete', 'false')
     website_selected = request.args.get('website', advert.website)
+    logdata = request.args.get('logdata', 'false')
 
     website_list = [ad.location for ad in adtracking]
+    
+    total_number_of_tracking = adtracking.count()
 
     if request.method == 'POST':
         if form.validate() == False:
@@ -141,7 +146,11 @@ def manage_advert(checksum):
         
         return render_template('pages/advert.html', form=form, advert=advert,
                                 edit=edit, website_list=website_list,
-                                website_selected=website_selected)
+                                website_selected=website_selected, 
+                                total_number_of_tracking=total_number_of_tracking,
+                                logged_adverts=adtracking,
+                                logdata=logdata,
+                                tracking_count=tracking_count)
 
 
 

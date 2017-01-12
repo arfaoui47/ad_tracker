@@ -8,7 +8,7 @@
   <div class="span4"></div>
 </div>
 
-<div class='row col-md-offset-8' >
+<div class='row col-md-offset-6' >
 
 <div class='col-md-2'>
 <a href="{{ url_for('manage_advert', checksum=advert.checksum ,edit='true') }}" class="btn btn-default" role="button"> Edit </a>
@@ -16,7 +16,10 @@
 <div class='col-md-3'>
 <a href="{{ url_for('manage_advert', checksum=advert.checksum ,delete='true') }}" class="btn btn-default" role="button"> Delete ad</a>
 </div>
-<div class="dropdown col-md-4">
+<div class='col-md-4'>
+<a href="{{ url_for('manage_advert', checksum=advert.checksum ,logdata='true') }}" class="btn btn-default" role="button"> View Logging data</a>
+</div>
+<div class="dropdown col-md-3">
 
     <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">Select Website
     <span class="caret"></span></button>
@@ -42,6 +45,7 @@
     <tr class="info">
         <th class="col-sm-3"> Web Address </th>
         <th class="col-sm-2"> Date </th>
+        <th class="col-sm-3"> Tracking count</th>
         <th class="col-sm-2"> Rate </th>
         <th class="col-sm-2"> Value </th>
     </tr>
@@ -49,14 +53,40 @@
 <tbody>
         <tr>
             <td class="col-sm-3"> {{website_selected}} </td>
-            <td class="col-sm-3"> {{advert.date_creation}} </td>
-            <td class="col-sm-3"> {{advert.rate}} </td>
-            <td class="col-sm-3"> {{advert.value}} </td>
+            <td class="col-sm-2"> {{advert.date_creation}} </td>
+            <td class="col-sm-3"> {{tracking_count}} </td>
+            <td class="col-sm-2"> {{advert.rate}} </td>
+            <td class="col-sm-2"> {{advert.value}} </td>
         </tr>
 </tbody>
 </table>
 </div>
+{% if logdata=='true' %}
 
+<div class="container">   
+<table class="table table-bordered table-hover">
+ <thead>
+    <tr>
+        <th class="col-sm-4"> Date </th>
+        <th class="col-sm-8"> Website </th>
+    </tr>
+</thead>
+<tbody>
+        {% for item in logged_adverts%}
+        
+        <tr">
+            <td class="col-sm-4">{{ item.date_creation }}</td>
+            <td class="col-sm-8"> {{ item.location }} </td>
+        </tr>
+        {%else%}
+        <tr><h4> No logging data</h4></tr>
+        
+        {% endfor %}
+</tbody>
+</table>
+</div>
+
+{% endif %}
 
 <div class="container">   
 <table class="table table-bordered table-hover">
