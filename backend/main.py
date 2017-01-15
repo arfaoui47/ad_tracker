@@ -1,5 +1,5 @@
 # from selenium import webdriver
-from tor_webdriver import tor_driver
+from tor_webdriver import firefox_driver, phantomjs_driver
 from save import save_new_gifs
 import time
 from random import randint
@@ -45,8 +45,8 @@ def find_static_files(url):
     :param url: website to crawl
     :return:  list off all static file of a specific website
     """
-    # driver = webdriver.Firefox(executable_path='./geckodriver')
-    driver = tor_driver()[0]
+    driver, display = phantomjs_driver()
+    display.start()
     driver.get(url)
     gifs_urls = set()
     final_gifs = set()
@@ -111,7 +111,7 @@ def find_static_files(url):
                 final_gifs.add(i)
 
     driver.quit()
-    tor_driver()[1].stop()
+    display.stop()
     return final_gifs
 
 
@@ -129,7 +129,7 @@ def crawl():
             gifs_url = find_static_files(url)
             print '[+] All Gif links', gifs_url
             save_new_gifs(gifs_url, url)
-
+        driver.quit()
         time.sleep(randint(1200, 1800))
 
 

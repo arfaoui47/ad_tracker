@@ -1,5 +1,6 @@
 from pyvirtualdisplay import Display
 from selenium import webdriver
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.common.proxy import *
 import random
 import os
@@ -42,15 +43,18 @@ proxy = Proxy({
 
 
 class MockDisplay():
+    def start(self):
+        pass
+
     def stop(self):
-        return 1
+        pass
 
 
-def tor_driver():
+
+def firefox_driver():
     User_agent = random.choice(uas)
     resolution = random.choice(sizes)
     display = Display(visible=0, size=resolution)
-    display.start()
     profile = webdriver.FirefoxProfile()
     profile.set_preference("general.useragent.override", User_agent)
     driver = webdriver.Firefox(profile,
@@ -58,8 +62,16 @@ def tor_driver():
                                proxy=proxy)
     driver.set_window_size(*resolution)
     return driver, display
-    # return webdriver.Firefox(executable_path='./geckodriver'), MockDisplay()
+    
 
+def phantomjs_driver():
+    User_agent = random.choice(uas)
+    resolution = random.choice(sizes)
+    dcap = dict(DesiredCapabilities.PHANTOMJS)
+    dcap["phantomjs.page.settings.userAgent"] = (User_agent)
+    driver = webdriver.PhantomJS(desired_capabilities=dcap)
+
+    return driver, MockDisplay()
 
 if __name__ == '__main__':
     driver = tor_driver()[0]
