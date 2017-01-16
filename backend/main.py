@@ -7,6 +7,15 @@ from collections import deque
 from configparser import ConfigParser
 from create_db_tables import db_connection, find_all_websites
 import os
+import signal
+
+
+class TimeoutException(Exception):   # Custom exception class
+    pass
+
+
+def timeout_handler(signum, frame):   # Custom signal handler
+    raise TimeoutException
 
 
 def r_iframe_lookup(driver, li, imgs):
@@ -24,7 +33,10 @@ def r_iframe_lookup(driver, li, imgs):
             driver.switch_to_frame(iframe)
 
             images_tags = driver.find_elements_by_tag_name("img")
-            imgs_src = [w.get_attribute('SRC') for w in images_tags]
+            imgs_src = []
+            for i in images_tags:
+                banner_size = str(i.get_attribute('width') + 'x' + i.get_attribute('height'))
+                imgs_src.append((i.get_attribute('SRC'), banner_size))
             imgs += imgs_src
             try:
                 iframe_list = driver.find_elements_by_tag_name('iframe')
@@ -55,7 +67,8 @@ def find_static_files(url):
                      'cat.fr.eu.criteo', 'doubleclick', 'lg.php?', 'pixel.gif',
                      'cat.nl.eu.criteo.com/delivery', 'adstore_icon_on.png',
                      'xblasterads', 'tags.bluekai', 'dpm.demdex.net/ibs:dpid',
-                     'EMPTY_IMG.png', 'production.selectmedia.asia']
+                     'EMPTY_IMG.png', 'production.selectmedia.asia',
+                     'cdn.adnomics.io']
 
     ##########################################################################
     #                           ad file in source                            #
@@ -77,7 +90,8 @@ def find_static_files(url):
         for url_static in image_in_source_urls:
             img_tags = driver.find_elements_by_xpath(
                 image_in_source_urls[url_static])
-            gifs_urls |= set([i.get_attribute('SRC') for i in img_tags])
+            gifs_urls |= set([(i.get_attribute('SRC'), str(i.get_attribute('width') + 'x' \
+             + i.get_attribute('height'))) for i in img_tags])
 
     ##########################################################################
     #                           3rd-party ads                                #
@@ -101,18 +115,24 @@ def find_static_files(url):
         img_tags = driver.find_elements_by_xpath(
             "//img[contains(@SRC, 'http://www.easyenergy.com.cy/openx/www/"
             "images/')]")
-        gifs_urls |= set([i.get_attribute('SRC') for i in img_tags])
+        gifs_urls |= set([(i.get_attribute('SRC'), i.get_attribute('height')\
+            + 'x' + i.get_attribute('width')) for i in img_tags])
     except:
         raise
 
-    for i in gifs_urls:
+    composed_adverts = []
+    for i,k in gifs_urls:
+        if i in 'adnomics': 
+            composed_adverts.append((i,k))
+
+    for i,k in gifs_urls:
         if i is not None:
             if all(j not in i for j in not_ad_images):
-                final_gifs.add(i)
+                final_gifs.add((i,k))
 
     driver.quit()
     display.stop()
-    return final_gifs
+    return final_gifs, composed_adverts
 
 
 def crawl():
@@ -126,10 +146,17 @@ def crawl():
     while True:
         for url in url_list:
             print '[+] Retrieving Gifs in URL: ', url
-            gifs_url = find_static_files(url)
+            # signal.alarm(5)
+            # try:
+                # A(i) # Whatever your function that might hang
+            gifs_url, composed_adverts = find_static_files(url) # handle composed adverts
             print '[+] All Gif links', gifs_url
             save_new_gifs(gifs_url, url)
-        driver.quit()
+            # except:# except TimeoutException:
+            #     continue # continue the for loop if function A takes more than 5 second
+            # finally:
+            #     pass
+            # driver.quit()   
         time.sleep(randint(1200, 1800))
 
 

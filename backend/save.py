@@ -124,7 +124,7 @@ def image_local_save(url):
     return result
 
 
-def data_insert(md5_hash, data, website, url_bucket, connexion):
+def data_insert(md5_hash, data, website, url_bucket, banner_size, connexion):
     """
     insert a row to image table if for new adverts
     :param md5_hash: checksum field in database
@@ -146,7 +146,7 @@ def data_insert(md5_hash, data, website, url_bucket, connexion):
         date = time.strftime('%Y%m%d')
         cursor.execute("INSERT INTO images(checksum, date_creation, year,"
                        " month, date, url, website, file_type, original_url,"
-                       " authorized) VALUES ({},{},{},{},{},{},{},{},{},{})"
+                       " authorized, banner_size) VALUES ({},{},{},{},{},{},{},{},{},{},{})"
                        .format(
                            repr(md5_hash),
                            repr(date_creation),
@@ -156,7 +156,8 @@ def data_insert(md5_hash, data, website, url_bucket, connexion):
                            repr(url_bucket), repr(website),
                            repr(data.get('extension', 0)),
                            repr(original_url),
-                           repr('NULL')))
+                           repr('NULL'),
+                           repr(banner_size)))
 
         print '[+] Saving to MySQL database ...'
         connexion.commit()
@@ -188,7 +189,8 @@ def save_new_gifs(urls, website):
     """
     conn = db_connection()
 
-    for url in urls:
+    for url, banner_size in urls:
+        print url
         data = image_local_save(url)
         file = data.get('file_location', None)
         if file:
@@ -199,7 +201,10 @@ def save_new_gifs(urls, website):
             except:
                 pass
             if data_retrieve(md5_hash, website, conn):
-                data_insert(md5_hash, data, website, url_bucket, conn)
+                size = banner_size.split('x')
+                if any(i == '0' in size):   # do not save advert if size is zero
+                    continue
+                data_insert(md5_hash, data, website, url_bucket, banner_size, conn)
             print
 
     conn.close()
