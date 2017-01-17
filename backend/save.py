@@ -47,6 +47,34 @@ def adtracking_log(checksum, location, connexion):
     print '[+] Saving tracked advert'
 
 
+def create_screenshot(iframe):
+    location = iframe.location
+    size = iframe.size
+    driver.save_screenshot('screenshot.png') # saves screenshot of entire page    
+    im = Image.open('screenshot.png') # uses PIL library to open image in memory
+    left = location['x']
+    top = location['y']
+    right = location['x'] + size['width']
+    bottom = location['y'] + size['height']
+
+def create_folder_and_move_images(images):
+    md5_list = []
+    for i in images:
+        data = image_local_save(i)
+        file = data.get('file_location', None)
+        if file:
+            md5_hash = to_md5(file)
+            md5_list.append(md5_hash)
+    hashlist = ''.join(md5_list)
+    check_sum = md5(hashlist).hexdigest()
+    
+
+
+
+im = im.crop((left, top, right, bottom)) # defines crop points
+im.save('screenshot.png') #
+
+
 def data_retrieve(md5_hash, location, connexion):
     """
     retrieve existing adverts that have authorized value of True and
@@ -202,7 +230,7 @@ def save_new_gifs(urls, website):
                 pass
             if data_retrieve(md5_hash, website, conn):
                 size = banner_size.split('x')
-                if any(i == '0' in size):   # do not save advert if size is zero
+                if any(i == '0' for i in size):   # do not save advert if size is zero
                     continue
                 data_insert(md5_hash, data, website, url_bucket, banner_size, conn)
             print

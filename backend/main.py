@@ -33,6 +33,9 @@ def r_iframe_lookup(driver, li, imgs):
             driver.switch_to_frame(iframe)
 
             images_tags = driver.find_elements_by_tag_name("img")
+            if len(images_tags) > 1:
+                create_screenshot(iframe)
+                create_folder_and_move_images(images_tags)
             imgs_src = []
             for i in images_tags:
                 banner_size = str(i.get_attribute('width') + 'x' + i.get_attribute('height'))
