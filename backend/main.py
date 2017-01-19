@@ -36,6 +36,7 @@ def r_iframe_lookup(driver, li, imgs):
             if len(images_tags) > 1:
                 create_screenshot(iframe)
                 create_folder_and_move_images(images_tags)
+
             imgs_src = []
             for i in images_tags:
                 banner_size = str(i.get_attribute('width') + 'x' + i.get_attribute('height'))
@@ -67,7 +68,7 @@ def find_static_files(url):
     final_gifs = set()
     imgs = []
     not_ad_images = ['www.google.com/ads/measurement/', 'gstatic',
-                     'cat.fr.eu.criteo', 'doubleclick', 'lg.php?', 'pixel.gif',
+                     'cat.fr.eu.criteo', 'doubleclick', '.php?', 'pixel.gif',
                      'cat.nl.eu.criteo.com/delivery', 'adstore_icon_on.png',
                      'xblasterads', 'tags.bluekai', 'dpm.demdex.net/ibs:dpid',
                      'EMPTY_IMG.png', 'production.selectmedia.asia',
@@ -149,17 +150,9 @@ def crawl():
     while True:
         for url in url_list:
             print '[+] Retrieving Gifs in URL: ', url
-            # signal.alarm(5)
-            # try:
-                # A(i) # Whatever your function that might hang
             gifs_url, composed_adverts = find_static_files(url) # handle composed adverts
             print '[+] All Gif links', gifs_url
             save_new_gifs(gifs_url, url)
-            # except:# except TimeoutException:
-            #     continue # continue the for loop if function A takes more than 5 second
-            # finally:
-            #     pass
-            # driver.quit()   
         time.sleep(randint(1200, 1800))
 
 

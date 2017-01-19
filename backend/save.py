@@ -5,7 +5,7 @@ import string
 import random
 import time
 from configparser import ConfigParser
-from upload_to_S3 import upload_to_S3
+from upload_to_S3 import upload_to_S3, upload_dir_to_S3
 import os
 
 
@@ -57,22 +57,28 @@ def create_screenshot(iframe):
     right = location['x'] + size['width']
     bottom = location['y'] + size['height']
 
+    im = im.crop((left, top, right, bottom)) # defines crop points
+    im.save('screenshot.png') #
+
 def create_folder_and_move_images(images):
     md5_list = []
+    file_list = []
     for i in images:
         data = image_local_save(i)
         file = data.get('file_location', None)
         if file:
             md5_hash = to_md5(file)
             md5_list.append(md5_hash)
+            file_list.append(file)
     hashlist = ''.join(md5_list)
     check_sum = md5(hashlist).hexdigest()
-    
+    os.makedirs(os.path.join(dir_path, 'local_images/', check_sum))
+    for file in file_list:
+        os.rename(os.path.join(dir_path, 'local_images/',file),
+         os.path.join(dir_path, 'local_images/', check_sum, file))
+    upload_dir_to_S3(os.path.join(dir_path, 'local_images/', check_sum))
 
 
-
-im = im.crop((left, top, right, bottom)) # defines crop points
-im.save('screenshot.png') #
 
 
 def data_retrieve(md5_hash, location, connexion):
@@ -230,7 +236,7 @@ def save_new_gifs(urls, website):
                 pass
             if data_retrieve(md5_hash, website, conn):
                 size = banner_size.split('x')
-                if any(i == '0' for i in size):   # do not save advert if size is zero
+                if any(i < '5' for i in size):   # do not save advert if size is zero
                     continue
                 data_insert(md5_hash, data, website, url_bucket, banner_size, conn)
             print

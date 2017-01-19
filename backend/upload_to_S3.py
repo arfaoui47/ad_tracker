@@ -21,29 +21,28 @@ def upload_to_S3(md5_hash, file):
     return url
 
 
-def upload_dir_to_S3(dir_name)
+def upload_dir_to_S3(dirname):
     sourceDir = dirname
-    destDir = dirname
-
+    destDir = dirname.split('/')[-2]
 
     uploadFileNames = []
     for (sourceDir, dirname, filename) in os.walk(sourceDir):
         uploadFileNames.extend(filename)
         break
+    print dirname
 
-
-def percent_cb(complete, total):
-    sys.stdout.write('.')
-    sys.stdout.flush()
+    def percent_cb(complete, total):
+        sys.stdout.write('.')
+        sys.stdout.flush()
 
     for filename in uploadFileNames:
         sourcepath = os.path.join(sourceDir + filename)
         destpath = os.path.join(destDir, filename)
         print 'Uploading %s to Amazon S3 bucket %s' % \
-               (sourcepath, bucket_name)
+               (sourcepath, bucket)
 
         filesize = os.path.getsize(sourcepath)
-        if filesize > MAX_SIZE:
+        if filesize > 1:
             print "multipart upload"
             mp = bucket.initiate_multipart_upload(destpath)
             fp = open(sourcepath,'rb')
@@ -51,7 +50,7 @@ def percent_cb(complete, total):
             while (fp.tell() < filesize):
                 fp_num += 1
                 print "uploading part %i" %fp_num
-                mp.upload_part_from_file(fp, fp_num, cb=percent_cb, num_cb=10, size=PART_SIZE)
+                mp.upload_part_from_file(fp, fp_num, cb=percent_cb, num_cb=10)
 
             mp.complete_upload()
 
@@ -61,3 +60,8 @@ def percent_cb(complete, total):
             k.key = destpath
             k.set_contents_from_filename(sourcepath,
                     cb=percent_cb, num_cb=10)
+
+if __name__ == '__main__':
+    path = os.path.abspath(__file__)
+    dir_path = os.path.dirname(path)
+    upload_dir_to_S3(os.path.join(dir_path, 'local_images/test/'))
