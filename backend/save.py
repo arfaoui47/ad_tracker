@@ -7,6 +7,7 @@ import time
 from configparser import ConfigParser
 from upload_to_S3 import upload_to_S3, upload_dir_to_S3
 import os
+from PIL import Image
 
 
 path = os.path.abspath(__file__)
@@ -47,10 +48,11 @@ def adtracking_log(checksum, location, connexion):
     print '[+] Saving tracked advert'
 
 
-def create_screenshot(iframe):
+def create_screenshot(driver, iframe):
     location = iframe.location
     size = iframe.size
-    driver.save_screenshot('screenshot.png') # saves screenshot of entire page    
+    driver.save_screenshot('local_images/screenshot.png') # saves screenshot of entire page    
+    
     im = Image.open('screenshot.png') # uses PIL library to open image in memory
     left = location['x']
     top = location['y']
@@ -58,7 +60,8 @@ def create_screenshot(iframe):
     bottom = location['y'] + size['height']
 
     im = im.crop((left, top, right, bottom)) # defines crop points
-    im.save('screenshot.png') #
+    im.save('local_images/screenshot.png') 
+    
 
 def create_folder_and_move_images(images):
     md5_list = []
@@ -73,10 +76,16 @@ def create_folder_and_move_images(images):
     hashlist = ''.join(md5_list)
     check_sum = md5(hashlist).hexdigest()
     os.makedirs(os.path.join(dir_path, 'local_images/', check_sum))
+    os.rename(os.path.join(dir_path, 'local_images/screenshot.png'),
+         os.path.join(dir_path, 'local_images/', check_sum))
+    upload_to_S3(check_sum + "screenshot", os.path.join(dir_path, 
+        'local_images/', check_sum))
     for file in file_list:
         os.rename(os.path.join(dir_path, 'local_images/',file),
          os.path.join(dir_path, 'local_images/', check_sum, file))
     upload_dir_to_S3(os.path.join(dir_path, 'local_images/', check_sum))
+
+
 
 
 

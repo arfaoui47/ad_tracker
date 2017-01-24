@@ -1,6 +1,6 @@
 # from selenium import webdriver
 from tor_webdriver import firefox_driver, phantomjs_driver
-from save import save_new_gifs
+from save import save_new_gifs, create_screenshot
 import time
 from random import randint
 from collections import deque
@@ -26,18 +26,36 @@ def r_iframe_lookup(driver, li, imgs):
     :param imgs: url of static files found in iframes
     :return:
     """
+    not_ad_images = ['www.google.com/ads/measurement/', 'gstatic',
+                     'cat.fr.eu.criteo', 'doubleclick', '.php?', 'pixel.gif',
+                     'cat.nl.eu.criteo.com/delivery', 'adstore_icon_on.png',
+                     'xblasterads', 'tags.bluekai', 'dpm.demdex.net/ibs:dpid',
+                     'EMPTY_IMG.png', 'production.selectmedia.asia',
+                     'cdn.adnomics.io']
     while len(li) > 0:
         iframe = li.popleft()
+        try:
+            create_screenshot(driver, iframe)
+        except:
+            print 'failed', iframe.get_attribute('ID')
         try:
             print '[+]', iframe.get_attribute('ID')
             driver.switch_to_frame(iframe)
 
             images_tags = driver.find_elements_by_tag_name("img")
+            for ig in images_tags:
+                if any(i in ig.get_attribute('SRC') for i in not_ad_images):
+                    images_tags.remove(ig)
             if len(images_tags) > 1:
-                create_screenshot(iframe)
+                # create_screenshot(driver, iframe)
                 create_folder_and_move_images(images_tags)
-
+            else:
+                try:
+                    os.remove('local_images/screenshot.png')
+                except:
+                    pass
             imgs_src = []
+            
             for i in images_tags:
                 banner_size = str(i.get_attribute('width') + 'x' + i.get_attribute('height'))
                 imgs_src.append((i.get_attribute('SRC'), banner_size))
