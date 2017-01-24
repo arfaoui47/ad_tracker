@@ -37,7 +37,7 @@ def r_iframe_lookup(driver, li, imgs):
         try:
             create_screenshot(driver, iframe)
         except:
-            print 'failed', iframe.get_attribute('ID')
+            pass
         try:
             print '[+]', iframe.get_attribute('ID')
             driver.switch_to_frame(iframe)
